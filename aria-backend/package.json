@@ -1,0 +1,46 @@
+{
+  "name": "aria-backend",
+  "version": "1.0.0",
+  "description": "Aria - AI Appointment Booking Assistant (Backend). Express + TypeScript + LangChain + Telegram Bot.",
+  "main": "dist/index.js",
+  "scripts": {
+    "dev": "nodemon --watch src -e ts --exec ts-node src/index.ts",
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/index.js",
+    "lint": "echo \"(optional) add eslint if desired\""
+  },
+  "keywords": [
+    "aria",
+    "appointment-booking",
+    "ai-assistant",
+    "telegram-bot",
+    "langchain",
+    "express",
+    "typescript"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@google/generative-ai": "^0.24.1",
+    "@langchain/core": "^0.3.18",
+    "@langchain/google-genai": "^2.2.0",
+    "@langchain/openai": "^0.3.14",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.1",
+    "langchain": "^0.3.6",
+    "mongoose": "^9.7.3",
+    "node-telegram-bot-api": "^0.66.0",
+    "uuid": "^9.0.1"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.17",
+    "@types/express": "^4.17.21",
+    "@types/node": "^20.14.9",
+    "@types/node-telegram-bot-api": "^0.64.7",
+    "@types/uuid": "^9.0.8",
+    "nodemon": "^3.1.7",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.6.3"
+  }
+}

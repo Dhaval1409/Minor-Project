@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Aria — Set up your AI employee</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#12172B; --paper:#F7F5EF; --card:#FFFFFF; --paper-dim:#EFEBDF;
+    --amber:#D98E2B; --amber-soft:#F6E3C2;
+    --emerald:#1F8A70; --emerald-soft:#DCF0EA;
+    --line:rgba(18,23,43,0.10);
+    --text:#181511; --text-dim:#66604F; --text-faint:#9A9382;
+    --on-ink:#F5F1E8; --on-ink-dim:#9BA0B8;
+    --display:'Space Grotesk',sans-serif; --body:'Inter',sans-serif; --mono:'IBM Plex Mono',monospace;
+    --r:14px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:var(--body);background:var(--paper);color:var(--text);}
+  .shell{max-width:960px;margin:0 auto;padding:40px 24px 100px;}
+
+  .top{display:flex;justify-content:space-between;align-items:center;margin-bottom:44px;}
+  .brand{display:flex;align-items:center;gap:9px;font-family:var(--display);font-weight:700;font-size:18px;}
+  .brand .dot{width:9px;height:9px;border-radius:50%;background:var(--emerald);}
+  .save-note{font-family:var(--mono);font-size:11.5px;color:var(--text-faint);}
+
+  /* progress */
+  .progress{display:flex;gap:6px;margin-bottom:38px;}
+  .progress-seg{flex:1;height:4px;border-radius:999px;background:var(--paper-dim);}
+  .progress-seg.done{background:var(--emerald);}
+  .progress-seg.active{background:var(--amber);}
+  .steps-label{display:flex;justify-content:space-between;margin-bottom:10px;font-family:var(--mono);font-size:11px;color:var(--text-faint);text-transform:uppercase;letter-spacing:0.05em;}
+  .steps-label span.current{color:var(--ink);font-weight:600;}
+
+  .step{display:none;}
+  .step.active{display:block;animation:fade 0.35s ease;}
+  @keyframes fade{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+
+  .step-head{margin-bottom:28px;}
+  .step-eyebrow{font-family:var(--mono);font-size:11.5px;color:var(--amber);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:10px;font-weight:600;}
+  .step-head h1{font-family:var(--display);font-size:30px;font-weight:700;letter-spacing:-0.015em;}
+  .step-head p{margin-top:8px;color:var(--text-dim);font-size:15px;max-width:520px;}
+
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:28px;}
+
+  .field{margin-bottom:20px;}
+  .field label{display:block;font-size:13px;font-weight:600;margin-bottom:8px;}
+  .field .hint{font-size:12px;color:var(--text-faint);margin-top:6px;}
+  .field input, .field select, .field textarea{
+    width:100%;padding:12px 14px;border:1px solid var(--line);border-radius:9px;
+    font-family:var(--body);font-size:14px;background:var(--paper);color:var(--text);
+  }
+  .field input:focus, .field select:focus, .field textarea:focus{outline:2px solid var(--amber);outline-offset:1px;}
+  .field-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+  @media(max-width:640px){.field-row{grid-template-columns:1fr;}}
+
+  /* option cards (choose channel / service) */
+  .opt-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;}
+  .opt-card{
+    border:1.5px solid var(--line);border-radius:12px;padding:18px;cursor:pointer;position:relative;
+    display:flex;gap:12px;align-items:flex-start;
+  }
+  .opt-card.selected{border-color:var(--amber);background:var(--amber-soft);}
+  .opt-card input{position:absolute;top:16px;right:16px;}
+  .opt-icon{width:36px;height:36px;border-radius:9px;background:var(--paper-dim);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;}
+  .opt-title{font-weight:600;font-size:14.5px;}
+  .opt-sub{font-size:12.5px;color:var(--text-dim);margin-top:3px;}
+  @media(max-width:640px){.opt-grid{grid-template-columns:1fr;}}
+
+  /* connection rows */
+  .conn-row{display:flex;justify-content:space-between;align-items:center;padding:18px 0;border-bottom:1px solid var(--line);}
+  .conn-row:last-child{border-bottom:none;}
+  .conn-left{display:flex;gap:14px;align-items:center;}
+  .conn-icon{width:42px;height:42px;border-radius:10px;background:var(--paper-dim);display:flex;align-items:center;justify-content:center;font-size:19px;}
+  .conn-title{font-weight:600;font-size:14.5px;}
+  .conn-sub{font-size:12.5px;color:var(--text-dim);margin-top:2px;}
+  .btn-connect{
+    font-family:var(--body);font-size:13px;font-weight:600;padding:9px 16px;border-radius:8px;
+    border:1.5px solid var(--ink);background:transparent;color:var(--ink);cursor:pointer;
+  }
+  .btn-connect.connected{background:var(--emerald-soft);color:var(--emerald);border-color:transparent;}
+
+  /* language chips */
+  .chip-select{display:flex;gap:10px;flex-wrap:wrap;}
+  .chip{
+    padding:10px 16px;border-radius:999px;border:1.5px solid var(--line);font-size:13.5px;font-weight:600;
+    cursor:pointer;color:var(--text-dim);
+  }
+  .chip.selected{border-color:var(--emerald);background:var(--emerald-soft);color:var(--emerald);}
+
+  /* preview panel */
+  .preview{
+    background:var(--ink);color:var(--on-ink);border-radius:12px;padding:20px;margin-top:24px;
+  }
+  .preview-label{font-family:var(--mono);font-size:10.5px;text-transform:uppercase;letter-spacing:0.08em;color:var(--on-ink-dim);margin-bottom:12px;}
+  .preview-bubble{background:rgba(255,255,255,0.06);border-radius:10px;padding:12px 14px;font-size:13.5px;line-height:1.5;}
+
+  /* review summary */
+  .summary-row{display:flex;justify-content:space-between;padding:14px 0;border-bottom:1px dashed var(--line);font-size:13.5px;}
+  .summary-row:last-child{border-bottom:none;}
+  .summary-row .k{color:var(--text-dim);}
+  .summary-row .v{font-weight:600;}
+  .edit-link{color:var(--amber);font-size:12px;font-weight:600;cursor:pointer;margin-left:8px;}
+
+  /* nav buttons */
+  .step-nav{display:flex;justify-content:space-between;align-items:center;margin-top:28px;}
+  .btn-primary{
+    background:var(--ink);color:var(--on-ink);border:none;padding:14px 26px;border-radius:999px;
+    font-weight:600;font-size:14.5px;cursor:pointer;
+  }
+  .btn-back{background:none;border:none;color:var(--text-dim);font-weight:600;font-size:14px;cursor:pointer;}
+  .btn-primary.launch{background:var(--amber);color:var(--ink);}
+
+  /* final success view */
+  .success{text-align:center;padding:50px 20px;}
+  .success .badge-icon{
+    width:74px;height:74px;border-radius:50%;background:var(--emerald-soft);color:var(--emerald);
+    display:flex;align-items:center;justify-content:center;font-size:32px;margin:0 auto 22px;
+  }
+  .success h1{font-family:var(--display);font-size:28px;font-weight:700;}
+  .success p{color:var(--text-dim);margin-top:10px;max-width:420px;margin-left:auto;margin-right:auto;font-size:15px;}
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <div class="top">
+    <div class="brand"><span class="dot"></span>Aria</div>
+    <div class="save-note">Progress saved automatically</div>
+  </div>
+
+  <div class="steps-label">
+    <span data-lbl="1">Account</span>
+    <span data-lbl="2">Business</span>
+    <span data-lbl="3">Phone</span>
+    <span data-lbl="4">WhatsApp</span>
+    <span data-lbl="5">Configure Aria</span>
+    <span data-lbl="6">Calendar</span>
+    <span data-lbl="7">Review</span>
+  </div>
+  <div class="progress" id="progress"></div>
+
+  <!-- STEP 1 — ACCOUNT -->
+  <div class="step active" data-step="1">
+    <div class="step-head">
+      <div class="step-eyebrow">Step 1 of 7</div>
+      <h1>Create your account</h1>
+      <p>This is how you'll log in to see Aria's reports and manage your settings.</p>
+    </div>
+    <div class="card">
+      <div class="field"><label>Full name</label><input type="text" placeholder="Rina Deshmukh"></div>
+      <div class="field"><label>Email address</label><input type="email" placeholder="rina@rinasalon.in"></div>
+      <div class="field-row">
+        <div class="field"><label>Mobile number</label><input type="text" placeholder="+91 98xxx xxxxx"></div>
+        <div class="field"><label>Password</label><input type="password" placeholder="Create a password"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 2 — BUSINESS -->
+  <div class="step" data-step="2">
+    <div class="step-head">
+      <div class="step-eyebrow">Step 2 of 7</div>
+      <h1>Tell us about your business</h1>
+      <p>Aria uses this to answer customer questions correctly from day one.</p>
+    </div>
+    <div class="card">
+      <div class="field"><label>Business name</label><input type="text" placeholder="Rina Salon"></div>
+      <div class="field-row">
+        <div class="field"><label>Business type</label>
+          <select><option>Salon / Spa</option><option>Clinic</option><option>Restaurant / Cafe</option><option>Retail store</option><option>Services (repair, tuition, etc.)</option><option>Other</option></select>
+        </div>
+        <div class="field"><label>City</label><input type="text" placeholder="Pune"></div>
+      </div>
+      <div class="field"><label>Business hours</label>
+        <div class="field-row">
+          <input type="text" placeholder="Opens — 10:00 AM">
+          <input type="text" placeholder="Closes — 8:00 PM">
+        </div>
+        <div class="hint">Aria will only take bookings inside these hours unless you turn on 24×7 mode later.</div>
+      </div>
+      <div class="field"><label>Services / products you offer</label>
+        <textarea rows="3" placeholder="Haircut, hair spa, facial, bridal package..."></textarea>
+        <div class="hint">One line is fine — Aria uses this to answer "do you offer X" questions.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 3 — PHONE -->
+  <div class="step" data-step="3">
+    <div class="step-head">
+      <div class="step-eyebrow">Step 3 of 7</div>
+      <h1>Connect your phone number</h1>
+      <p>Calls to this number will be picked up by Aria. Your existing number stays the same.</p>
+    </div>
+    <div class="card">
+      <div class="opt-grid" style="margin-bottom:8px;">
+        <div class="opt-card selected">
+          <div class="opt-icon">📱</div>
+          <div><div class="opt-title">Use my existing number</div><div class="opt-sub">We'll set up call forwarding — takes 2 minutes, no new SIM needed.</div></div>
+        </div>
+        <div class="opt-card">
+          <div class="opt-icon">🆕</div>
+          <div><div class="opt-title">Get a new business number</div><div class="opt-sub">We provide a dedicated number for Aria to answer.</div></div>
+        </div>
+      </div>
+      <div class="field" style="margin-top:20px;"><label>Your business number</label><input type="text" placeholder="+91 98xxx xxxxx"></div>
+      <div class="conn-row">
+        <div class="conn-left"><div class="conn-icon">☎</div><div><div class="conn-title">Call forwarding</div><div class="conn-sub">Not connected yet</div></div></div>
+        <button class="btn-connect">Set up forwarding</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 4 — WHATSAPP -->
+  <div class="step" data-step="4">
+    <div class="step-head">
+      <div class="step-eyebrow">Step 4 of 7</div>
+      <h1>Connect WhatsApp</h1>
+      <p>Aria replies to customer messages on your WhatsApp Business number.</p>
+    </div>
+    <div class="card">
+      <div class="conn-row">
+        <div class="conn-left"><div class="conn-icon">💬</div><div><div class="conn-title">WhatsApp Business</div><div class="conn-sub">Connect the same number as your call line</div></div></div>
+        <button class="btn-connect connected">✓ Connected</button>
+      </div>
+      <div class="conn-row">
+        <div class="conn-left"><div class="conn-icon">🖼</div><div><div class="conn-title">Business profile photo &amp; catalog</div><div class="conn-sub">Optional — shows in customer chats</div></div></div>
+        <button class="btn-connect">Upload</button>
+      </div>
+      <div class="preview">
+        <div class="preview-label">How it will look to your customer</div>
+        <div class="preview-bubble">Hi! This is Rina Salon 👋 I'm Aria, I help with bookings and questions here. How can I help you today?</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 5 — CONFIGURE ARIA -->
+  <div class="step" data-step="5">
+    <div class="step-head">
+      <div class="step-eyebrow">Step 5 of 7</div>
+      <h1>Set up what Aria can do</h1>
+      <p>Turn on the jobs you want handled automatically. You can change these anytime.</p>
+    </div>
+    <div class="card">
+      <div class="opt-grid">
+        <div class="opt-card selected"><div class="opt-icon">📞</div><div><div class="opt-title">Answer customers</div><div class="opt-sub">Calls + WhatsApp questions</div></div></div>
+        <div class="opt-card selected"><div class="opt-icon">🗓️</div><div><div class="opt-title">Book appointments</div><div class="opt-sub">Syncs to your calendar</div></div></div>
+        <div class="opt-card"><div class="opt-icon">🧾</div><div><div class="opt-title">Handle orders</div><div class="opt-sub">Takes and confirms orders</div></div></div>
+        <div class="opt-card selected"><div class="opt-icon">⏰</div><div><div class="opt-title">Send reminders</div><div class="opt-sub">Before each appointment</div></div></div>
+        <div class="opt-card selected"><div class="opt-icon">🎯</div><div><div class="opt-title">Follow up with leads</div><div class="opt-sub">Missed calls, unanswered chats</div></div></div>
+        <div class="opt-card selected"><div class="opt-icon">📊</div><div><div class="opt-title">Daily report</div><div class="opt-sub">Sent to you every evening</div></div></div>
+      </div>
+
+      <div class="field" style="margin-top:24px;"><label>Languages Aria should speak</label>
+        <div class="chip-select">
+          <div class="chip selected">English</div>
+          <div class="chip selected">Hindi</div>
+          <div class="chip selected">Marathi</div>
+          <div class="chip">Gujarati</div>
+          <div class="chip">Tamil</div>
+        </div>
+      </div>
+
+      <div class="field" style="margin-top:20px;"><label>Aria's greeting</label>
+        <textarea rows="2">Hi! This is Rina Salon, I'm Aria — how can I help you today?</textarea>
+        <div class="hint">This is the first thing customers hear or read.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 6 — CALENDAR -->
+  <div class="step" data-step="6">
+    <div class="step-head">
+      <div class="step-eyebrow">Step 6 of 7</div>
+      <h1>Connect your calendar</h1>
+      <p>So Aria only books real, open slots.</p>
+    </div>
+    <div class="card">
+      <div class="conn-row">
+        <div class="conn-left"><div class="conn-icon">📅</div><div><div class="conn-title">Google Calendar</div><div class="conn-sub">Recommended</div></div></div>
+        <button class="btn-connect connected">✓ Connected</button>
+      </div>
+      <div class="conn-row">
+        <div class="conn-left"><div class="conn-icon">🗂️</div><div><div class="conn-title">Simple slot list instead</div><div class="conn-sub">No calendar? Set fixed daily slots</div></div></div>
+        <button class="btn-connect">Set up</button>
+      </div>
+      <div class="conn-row">
+        <div class="conn-left"><div class="conn-icon">💳</div><div><div class="conn-title">Payment link (optional)</div><div class="conn-sub">For order confirmations</div></div></div>
+        <button class="btn-connect">Add UPI / link</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 7 — REVIEW -->
+  <div class="step" data-step="7">
+    <div class="step-head">
+      <div class="step-eyebrow">Step 7 of 7</div>
+      <h1>Review before Aria goes live</h1>
+      <p>Check everything below — Aria starts answering as soon as you launch.</p>
+    </div>
+    <div class="card">
+      <div class="summary-row"><span class="k">Business</span><span class="v">Rina Salon · Salon / Spa · Pune <span class="edit-link">Edit</span></span></div>
+      <div class="summary-row"><span class="k">Phone</span><span class="v">+91 98xxx xxxxx · forwarding set up <span class="edit-link">Edit</span></span></div>
+      <div class="summary-row"><span class="k">WhatsApp</span><span class="v">Connected <span class="edit-link">Edit</span></span></div>
+      <div class="summary-row"><span class="k">Jobs enabled</span><span class="v">Answer, Book, Remind, Follow-up, Report <span class="edit-link">Edit</span></span></div>
+      <div class="summary-row"><span class="k">Languages</span><span class="v">English, Hindi, Marathi <span class="edit-link">Edit</span></span></div>
+      <div class="summary-row"><span class="k">Calendar</span><span class="v">Google Calendar connected <span class="edit-link">Edit</span></span></div>
+      <div class="summary-row"><span class="k">Plan</span><span class="v">Growth — ₹3,999/month <span class="edit-link">Edit</span></span></div>
+    </div>
+  </div>
+
+  <!-- SUCCESS -->
+<div class="step" data-step="8">
+  <div class="card success">
+    <div class="badge-icon">✓</div>
+    <h1>Aria is on duty.</h1>
+    <p>She's now answering calls and WhatsApp messages for Rina Salon. You'll get your first daily report tonight.</p>
+
+    <button
+      class="btn-primary"
+      style="margin-top:24px;"
+      onclick="window.location.href='aria-dashboard.html'">
+      Go to my dashboard →
+    </button>
+  </div>
+</div>
+
+  <!-- NAV -->
+  <div class="step-nav" id="stepNav">
+    <button class="btn-back" id="backBtn" style="visibility:hidden;">← Back</button>
+    <button  class="btn-primary" id="nextBtn">Continue →</button>
+  </div>
+
+</div>
+
+<script>
+  const total = 7;
+  let current = 1;
+  const progressEl = document.getElementById('progress');
+  const labels = document.querySelectorAll('.steps-label span');
+
+  for(let i=1;i<=total;i++){
+    const seg = document.createElement('div');
+    seg.className = 'progress-seg';
+    seg.id = 'seg-'+i;
+    progressEl.appendChild(seg);
+  }
+
+  function render(){
+    document.querySelectorAll('.step').forEach(s=>s.classList.remove('active'));
+    document.querySelector(`.step[data-step="${current}"]`).classList.add('active');
+
+    for(let i=1;i<=total;i++){
+      const seg = document.getElementById('seg-'+i);
+      seg.classList.remove('done','active');
+      if(i < current) seg.classList.add('done');
+      else if(i === current) seg.classList.add('active');
+    }
+    labels.forEach(l=>l.classList.toggle('current', parseInt(l.dataset.lbl)===current));
+
+    const nav = document.getElementById('stepNav');
+    const back = document.getElementById('backBtn');
+    const next = document.getElementById('nextBtn');
+    if(current > total){ nav.style.display='none'; return; } else { nav.style.display='flex'; }
+
+    back.style.visibility = current===1 ? 'hidden' : 'visible';
+    next.textContent = current===total ? 'Launch Aria →' : 'Continue →';
+    next.className = current===total ? 'btn-primary launch' : 'btn-primary';
+  }
+
+  document.getElementById('nextBtn').addEventListener('click',()=>{
+    current++;
+    render();
+  });
+  document.getElementById('backBtn').addEventListener('click',()=>{
+    if(current>1){ current--; render(); }
+  });
+
+  // option card / chip toggles for demo interactivity
+  document.querySelectorAll('.opt-card').forEach(c=>c.addEventListener('click',()=>c.classList.toggle('selected')));
+  document.querySelectorAll('.chip').forEach(c=>c.addEventListener('click',()=>c.classList.toggle('selected')));
+  document.querySelectorAll('.btn-connect').forEach(b=>b.addEventListener('click',()=>{
+    b.classList.add('connected'); b.textContent='✓ Connected';
+    b.previousElementSibling ? null : null;
+  }));
+
+  render();
+</script>
+</body>
+</html>
