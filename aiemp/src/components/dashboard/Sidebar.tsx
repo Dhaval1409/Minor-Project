@@ -1,4 +1,5 @@
 'use client';
+
 import Link from 'next/link';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
@@ -43,18 +44,20 @@ export function Sidebar({ view, setView }: SidebarProps) {
   const [open, setOpen] = useState(false);
 
   const SidebarContent = () => (
-    <div className="flex flex-col h-full">
-      <div className="p-6 border-b">
-        <Link href="/" className="flex items-center gap-3 font-semibold text-lg">
-          <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-lg shadow-emerald-500/50 animate-pulse" />
+    <div className="flex flex-col h-full bg-paper-dim text-text-on-paper select-none">
+      {/* ---------- BRAND LOGO ---------- */}
+      <div className="p-6 border-b border-ink/10 flex items-center h-[72px]">
+        <Link href="/" className="flex items-center gap-2.5 font-display font-bold text-[20px] tracking-tight text-ink">
+          <div className="w-2.5 h-2.5 rounded-full bg-emerald shadow-[0_0_0_4px_rgba(31,138,112,0.15)] animate-pulse" />
           <span>Aria Workspace</span>
         </Link>
       </div>
 
+      {/* ---------- NAVIGATION SCROLL ---------- */}
       <ScrollArea className="flex-1 px-4 py-6">
         {navGroups.map((group) => (
           <div key={group.label} className="mb-6">
-            <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-3 mb-2">
+            <h3 className="font-mono text-[11px] font-semibold text-text-on-paper-dim uppercase tracking-wider px-3 mb-2.5">
               {group.label}
             </h3>
             <div className="space-y-1">
@@ -64,17 +67,19 @@ export function Sidebar({ view, setView }: SidebarProps) {
                 return (
                   <Button
                     key={item.key}
-                    variant={isActive ? 'default' : 'ghost'}
+                    variant="ghost"
                     className={cn(
-                      'w-full justify-start gap-3 text-sm font-medium',
-                      isActive && 'bg-primary/10 text-primary hover:bg-primary/20'
+                      'w-full justify-start gap-3 text-[14px] font-medium rounded-[10px] transition-all duration-200 py-2.5 px-3 h-auto',
+                      isActive 
+                        ? 'bg-ink text-text-on-ink hover:bg-ink hover:text-text-on-ink shadow-sm font-semibold' 
+                        : 'text-text-on-paper-dim hover:text-ink hover:bg-ink/5'
                     )}
                     onClick={() => {
                       setView(item.key);
                       setOpen(false);
                     }}
                   >
-                    <Icon className="h-4 w-4" />
+                    <Icon className="h-4 w-4 flex-shrink-0" />
                     {item.label}
                   </Button>
                 );
@@ -84,10 +89,15 @@ export function Sidebar({ view, setView }: SidebarProps) {
         ))}
       </ScrollArea>
 
-      <div className="p-4 border-t mt-auto">
-        <div className="rounded-lg bg-muted p-3 text-xs flex justify-between items-center">
-          <span>Plan: <strong className="text-primary">Growth</strong></span>
-          <span className="text-muted-foreground">₹3,999/mo</span>
+      {/* ---------- SUBSCRIPTION STATE COUNTER ---------- */}
+      <div className="p-4 border-t border-ink/10 mt-auto">
+        <div className="rounded-[12px] bg-card border border-ink/10 p-3.5 text-[12.5px] flex justify-between items-center shadow-[0_8px_16px_-6px_rgba(18,23,43,0.04)]">
+          <span className="text-text-on-paper font-medium">
+            Plan: <strong className="font-bold text-amber">Growth</strong>
+          </span>
+          <span className="font-mono text-text-on-paper-dim text-[11.5px]">
+            ₹3,999/mo
+          </span>
         </div>
       </div>
     </div>
@@ -95,23 +105,26 @@ export function Sidebar({ view, setView }: SidebarProps) {
 
   return (
     <>
-      {/* Mobile Sidebar */}
+      {/* Mobile Floating Drawer Navigation Container */}
       <Sheet open={open} onOpenChange={setOpen}>
-        {/* FIX: Remove asChild and use a div wrapper */}
         <SheetTrigger asChild>
           <div className="lg:hidden fixed top-4 left-4 z-50">
-            <Button variant="ghost" size="icon" className="h-10 w-10">
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="h-10 w-10 border border-ink/10 bg-paper text-ink hover:bg-ink/5 shadow-sm rounded-[10px]"
+            >
               <Menu className="h-5 w-5" />
             </Button>
           </div>
         </SheetTrigger>
-        <SheetContent side="left" className="p-0 w-72">
+        <SheetContent side="left" className="p-0 w-72 bg-paper-dim border-r border-ink/10">
           <SidebarContent />
         </SheetContent>
       </Sheet>
 
-      {/* Desktop Sidebar */}
-      <aside className="hidden lg:flex fixed top-0 left-0 h-screen w-64 flex-col border-r bg-background">
+      {/* Desktop Navigation Container */}
+      <aside className="hidden lg:flex fixed top-0 left-0 h-screen w-64 flex-col border-r border-ink/10 bg-paper-dim">
         <SidebarContent />
       </aside>
     </>
