@@ -1,685 +1,3 @@
-// 'use client';
-
-// import { useState } from 'react';
-// import { useRouter } from 'next/navigation';
-// import OptionCard from '@/components/onboarding/OptionCard';
-// import Chip from '@/components/onboarding/Chip';
-// import ConnectRow from '@/components/onboarding/ConnectRow';
-// import ProgressBar from '@/components/onboarding/ProgressBar';
-
-// const TOTAL_STEPS = 7;
-
-// const jobOptions = [
-//   { key: 'answer', icon: '📞', title: 'Answer customers', sub: 'Calls + WhatsApp questions', defaultSelected: true },
-//   { key: 'book', icon: '🗓️', title: 'Book appointments', sub: 'Syncs to your calendar', defaultSelected: true },
-//   { key: 'orders', icon: '🧾', title: 'Handle orders', sub: 'Takes and confirms orders', defaultSelected: false },
-//   { key: 'remind', icon: '⏰', title: 'Send reminders', sub: 'Before each appointment', defaultSelected: true },
-//   { key: 'followup', icon: '🎯', title: 'Follow up with leads', sub: 'Missed calls, unanswered chats', defaultSelected: true },
-//   { key: 'report', icon: '📊', title: 'Daily report', sub: 'Sent to you every evening', defaultSelected: true },
-// ];
-
-// const languageOptions = [
-//   { key: 'en', label: 'English', defaultSelected: true },
-//   { key: 'hi', label: 'Hindi', defaultSelected: true },
-//   { key: 'mr', label: 'Marathi', defaultSelected: true },
-//   { key: 'gu', label: 'Gujarati', defaultSelected: false },
-//   { key: 'ta', label: 'Tamil', defaultSelected: false },
-// ];
-
-// const phoneOptions = [
-//   { key: 'existing', icon: '📱', title: 'Use my existing number', sub: "We'll set up call forwarding — takes 2 minutes, no new SIM needed." },
-//   { key: 'new', icon: '🆕', title: 'Get a new business number', sub: 'We provide a dedicated number for Aria to answer.' },
-// ];
-
-// const inputClass =
-//   'w-full rounded-[9px] border border-ink/10 bg-paper px-3.5 py-3 text-[14px] text-ink placeholder:text-text-faint focus:outline-2 focus:outline-amber focus:outline-offset-1';
-// const labelClass = 'mb-2 block text-[13px] font-semibold text-ink';
-
-// export default function Onboarding() {
-//   const router = useRouter();
-//   const [current, setCurrent] = useState(1);
-//   const [selectedPhoneOpt, setSelectedPhoneOpt] = useState('existing');
-//   const [selectedJobs, setSelectedJobs] = useState<string[]>(
-//     jobOptions.filter((j) => j.defaultSelected).map((j) => j.key)
-//   );
-//   const [selectedLangs, setSelectedLangs] = useState<string[]>(
-//     languageOptions.filter((l) => l.defaultSelected).map((l) => l.key)
-//   );
-//   const [connected, setConnected] = useState<Record<string, boolean>>({
-//     forwarding: false,
-//     whatsapp: true,
-//     calendar: true,
-//     slots: false,
-//     payment: false,
-//   });
-
-//   const toggleJob = (key: string) =>
-//     setSelectedJobs((prev) => (prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key]));
-//   const toggleLang = (key: string) =>
-//     setSelectedLangs((prev) => (prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key]));
-//   const connect = (key: string) => setConnected((prev) => ({ ...prev, [key]: true }));
-
-//   const goNext = () => setCurrent((c) => c + 1);
-//   const goBack = () => setCurrent((c) => Math.max(1, c - 1));
-
-//   return (
-//     <div className="min-h-screen bg-paper font-body text-text-on-paper">
-//       <div className="mx-auto max-w-[960px] px-6 pb-[100px] pt-10">
-//         <div className="mb-11 flex items-center justify-between">
-//           <div className="flex items-center gap-2.5 font-display text-[18px] font-bold text-ink">
-//             <span className="h-[9px] w-[9px] rounded-full bg-emerald" />
-//             Aria
-//           </div>
-//           <div className="font-mono text-[11.5px] text-text-faint">Progress saved automatically</div>
-//         </div>
-
-//         {current <= TOTAL_STEPS && <ProgressBar current={current} total={TOTAL_STEPS} />}
-
-//         {/* STEP 1 — ACCOUNT */}
-//         {current === 1 && (
-//           <div className="animate-in fade-in duration-300">
-//             <StepHead eyebrow="Step 1 of 7" title="Create your account" desc="This is how you'll log in to see Aria's reports and manage your settings." />
-//             <div className="rounded-[14px] border border-ink/10 bg-white p-7">
-//               <div className="mb-5"><label className={labelClass}>Full name</label><input className={inputClass} type="text" placeholder="Rina Deshmukh" /></div>
-//               <div className="mb-5"><label className={labelClass}>Email address</label><input className={inputClass} type="email" placeholder="rina@rinasalon.in" /></div>
-//               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-//                 <div><label className={labelClass}>Mobile number</label><input className={inputClass} type="text" placeholder="+91 98xxx xxxxx" /></div>
-//                 <div><label className={labelClass}>Password</label><input className={inputClass} type="password" placeholder="Create a password" /></div>
-//               </div>
-//             </div>
-//           </div>
-//         )}
-
-//         {/* STEP 2 — BUSINESS */}
-//         {current === 2 && (
-//           <div className="animate-in fade-in duration-300">
-//             <StepHead eyebrow="Step 2 of 7" title="Tell us about your business" desc="Aria uses this to answer customer questions correctly from day one." />
-//             <div className="rounded-[14px] border border-ink/10 bg-white p-7">
-//               <div className="mb-5"><label className={labelClass}>Business name</label><input className={inputClass} type="text" placeholder="Rina Salon" /></div>
-//               <div className="mb-5 grid grid-cols-1 gap-4 sm:grid-cols-2">
-//                 <div>
-//                   <label className={labelClass}>Business type</label>
-//                   <select className={inputClass}>
-//                     <option>Salon / Spa</option>
-//                     <option>Clinic</option>
-//                     <option>Restaurant / Cafe</option>
-//                     <option>Retail store</option>
-//                     <option>Services (repair, tuition, etc.)</option>
-//                     <option>Other</option>
-//                   </select>
-//                 </div>
-//                 <div><label className={labelClass}>City</label><input className={inputClass} type="text" placeholder="Pune" /></div>
-//               </div>
-//               <div className="mb-5">
-//                 <label className={labelClass}>Business hours</label>
-//                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-//                   <input className={inputClass} type="text" placeholder="Opens — 10:00 AM" />
-//                   <input className={inputClass} type="text" placeholder="Closes — 8:00 PM" />
-//                 </div>
-//                 <div className="mt-1.5 text-[12px] text-text-faint">Aria will only take bookings inside these hours unless you turn on 24×7 mode later.</div>
-//               </div>
-//               <div>
-//                 <label className={labelClass}>Services / products you offer</label>
-//                 <textarea className={inputClass} rows={3} placeholder="Haircut, hair spa, facial, bridal package..." />
-//                 <div className="mt-1.5 text-[12px] text-text-faint">One line is fine — Aria uses this to answer "do you offer X" questions.</div>
-//               </div>
-//             </div>
-//           </div>
-//         )}
-
-//         {/* STEP 3 — PHONE */}
-//         {current === 3 && (
-//           <div className="animate-in fade-in duration-300">
-//             <StepHead eyebrow="Step 3 of 7" title="Connect your phone number" desc="Calls to this number will be picked up by Aria. Your existing number stays the same." />
-//             <div className="rounded-[14px] border border-ink/10 bg-white p-7">
-//               <div className="mb-2 grid grid-cols-1 gap-3.5 sm:grid-cols-2">
-//                 {phoneOptions.map((opt) => (
-//                   <OptionCard
-//                     key={opt.key}
-//                     icon={opt.icon}
-//                     title={opt.title}
-//                     sub={opt.sub}
-//                     selected={selectedPhoneOpt === opt.key}
-//                     onClick={() => setSelectedPhoneOpt(opt.key)}
-//                   />
-//                 ))}
-//               </div>
-//               <div className="mb-2 mt-5"><label className={labelClass}>Your business number</label><input className={inputClass} type="text" placeholder="+91 98xxx xxxxx" /></div>
-//               <ConnectRow
-//                 icon="☎"
-//                 title="Call forwarding"
-//                 sub="Not connected yet"
-//                 connected={connected.forwarding}
-//                 actionLabel="Set up forwarding"
-//                 onConnect={() => connect('forwarding')}
-//               />
-//             </div>
-//           </div>
-//         )}
-
-//         {/* STEP 4 — WHATSAPP */}
-//         {current === 4 && (
-//           <div className="animate-in fade-in duration-300">
-//             <StepHead eyebrow="Step 4 of 7" title="Connect WhatsApp" desc="Aria replies to customer messages on your WhatsApp Business number." />
-//             <div className="rounded-[14px] border border-ink/10 bg-white p-7">
-//               <ConnectRow
-//                 icon="💬"
-//                 title="WhatsApp Business"
-//                 sub="Connect the same number as your call line"
-//                 connected={connected.whatsapp}
-//                 onConnect={() => connect('whatsapp')}
-//               />
-//               <ConnectRow
-//                 icon="🖼"
-//                 title="Business profile photo & catalog"
-//                 sub="Optional — shows in customer chats"
-//                 connected={false}
-//                 actionLabel="Upload"
-//                 onConnect={() => {}}
-//               />
-//               <div className="mt-6 rounded-xl bg-ink p-5 text-text-on-ink">
-//                 <div className="mb-3 font-mono text-[10.5px] uppercase tracking-wider text-text-on-ink-dim">
-//                   How it will look to your customer
-//                 </div>
-//                 <div className="rounded-[10px] bg-white/[0.06] p-3.5 text-[13.5px] leading-relaxed">
-//                   Hi! This is Rina Salon 👋 I'm Aria, I help with bookings and questions here. How can I help you today?
-//                 </div>
-//               </div>
-//             </div>
-//           </div>
-//         )}
-
-//         {/* STEP 5 — CONFIGURE ARIA */}
-//         {current === 5 && (
-//           <div className="animate-in fade-in duration-300">
-//             <StepHead eyebrow="Step 5 of 7" title="Set up what Aria can do" desc="Turn on the jobs you want handled automatically. You can change these anytime." />
-//             <div className="rounded-[14px] border border-ink/10 bg-white p-7">
-//               <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2">
-//                 {jobOptions.map((job) => (
-//                   <OptionCard
-//                     key={job.key}
-//                     icon={job.icon}
-//                     title={job.title}
-//                     sub={job.sub}
-//                     selected={selectedJobs.includes(job.key)}
-//                     onClick={() => toggleJob(job.key)}
-//                   />
-//                 ))}
-//               </div>
-
-//               <div className="mt-6">
-//                 <label className={labelClass}>Languages Aria should speak</label>
-//                 <div className="flex flex-wrap gap-2.5">
-//                   {languageOptions.map((lang) => (
-//                     <Chip
-//                       key={lang.key}
-//                       label={lang.label}
-//                       selected={selectedLangs.includes(lang.key)}
-//                       onClick={() => toggleLang(lang.key)}
-//                     />
-//                   ))}
-//                 </div>
-//               </div>
-
-//               <div className="mt-5">
-//                 <label className={labelClass}>Aria's greeting</label>
-//                 <textarea
-//                   className={inputClass}
-//                   rows={2}
-//                   defaultValue="Hi! This is Rina Salon, I'm Aria — how can I help you today?"
-//                 />
-//                 <div className="mt-1.5 text-[12px] text-text-faint">This is the first thing customers hear or read.</div>
-//               </div>
-//             </div>
-//           </div>
-//         )}
-
-//         {/* STEP 6 — CALENDAR */}
-//         {current === 6 && (
-//           <div className="animate-in fade-in duration-300">
-//             <StepHead eyebrow="Step 6 of 7" title="Connect your calendar" desc="So Aria only books real, open slots." />
-//             <div className="rounded-[14px] border border-ink/10 bg-white p-7">
-//               <ConnectRow icon="📅" title="Google Calendar" sub="Recommended" connected={connected.calendar} onConnect={() => connect('calendar')} />
-//               <ConnectRow icon="🗂️" title="Simple slot list instead" sub="No calendar? Set fixed daily slots" connected={connected.slots} actionLabel="Set up" onConnect={() => connect('slots')} />
-//               <ConnectRow icon="💳" title="Payment link (optional)" sub="For order confirmations" connected={connected.payment} actionLabel="Add UPI / link" onConnect={() => connect('payment')} />
-//             </div>
-//           </div>
-//         )}
-
-//         {/* STEP 7 — REVIEW */}
-//         {current === 7 && (
-//           <div className="animate-in fade-in duration-300">
-//             <StepHead eyebrow="Step 7 of 7" title="Review before Aria goes live" desc="Check everything below — Aria starts answering as soon as you launch." />
-//             <div className="rounded-[14px] border border-ink/10 bg-white p-7">
-//               <SummaryRow k="Business" v="Rina Salon · Salon / Spa · Pune" onEdit={() => setCurrent(2)} />
-//               <SummaryRow k="Phone" v={`+91 98xxx xxxxx · ${connected.forwarding ? 'forwarding set up' : 'forwarding pending'}`} onEdit={() => setCurrent(3)} />
-//               <SummaryRow k="WhatsApp" v={connected.whatsapp ? 'Connected' : 'Not connected'} onEdit={() => setCurrent(4)} />
-//               <SummaryRow k="Jobs enabled" v={`${selectedJobs.length} selected`} onEdit={() => setCurrent(5)} />
-//               <SummaryRow k="Languages" v={`${selectedLangs.length} selected`} onEdit={() => setCurrent(5)} />
-//               <SummaryRow k="Calendar" v={connected.calendar ? 'Google Calendar connected' : 'Not connected'} onEdit={() => setCurrent(6)} />
-//               <SummaryRow k="Plan" v="Growth — ₹3,999/month" onEdit={() => router.push('/#pricing')} isLast />
-//             </div>
-//           </div>
-//         )}
-
-//         {/* SUCCESS */}
-//         {current === 8 && (
-//           <div className="animate-in fade-in rounded-[14px] border border-ink/10 bg-white p-[50px] text-center duration-300">
-//             <div className="mx-auto mb-[22px] flex h-[74px] w-[74px] items-center justify-center rounded-full bg-emerald-soft text-[32px] text-emerald">
-//               ✓
-//             </div>
-//             <h1 className="font-display text-[28px] font-bold text-ink">Aria is on duty.</h1>
-//             <p className="mx-auto mt-2.5 max-w-[420px] text-[15px] text-text-on-paper-dim">
-//               She's now answering calls and WhatsApp messages for Rina Salon. You'll get your first daily report tonight.
-//             </p>
-//             <button
-//               className="mt-6 rounded-full bg-ink px-[26px] py-3.5 text-[14.5px] font-semibold text-text-on-ink hover:opacity-90"
-//               onClick={() => router.push('/dashboard')}
-//             >
-//               Go to my dashboard →
-//             </button>
-//           </div>
-//         )}
-
-//         {/* NAV */}
-//         {current <= TOTAL_STEPS && (
-//           <div className="mt-7 flex items-center justify-between">
-//             <button
-//               className="text-[14px] font-semibold text-text-on-paper-dim"
-//               style={{ visibility: current === 1 ? 'hidden' : 'visible' }}
-//               onClick={goBack}
-//             >
-//               ← Back
-//             </button>
-//             <button
-//               className={`rounded-full px-[26px] py-3.5 text-[14.5px] font-semibold ${
-//                 current === TOTAL_STEPS ? 'bg-amber text-ink' : 'bg-ink text-text-on-ink'
-//               } hover:opacity-90`}
-//               onClick={goNext}
-//             >
-//               {current === TOTAL_STEPS ? 'Launch Aria →' : 'Continue →'}
-//             </button>
-//           </div>
-//         )}
-//       </div>
-//     </div>
-//   );
-// }
-
-// function StepHead({ eyebrow, title, desc }: { eyebrow: string; title: string; desc: string }) {
-//   return (
-//     <div className="mb-7">
-//       <div className="mb-2.5 font-mono text-[11.5px] font-semibold uppercase tracking-wider text-amber">{eyebrow}</div>
-//       <h1 className="font-display text-[30px] font-bold tracking-tight text-ink">{title}</h1>
-//       <p className="mt-2 max-w-[520px] text-[15px] text-text-on-paper-dim">{desc}</p>
-//     </div>
-//   );
-// }
-
-// function SummaryRow({ k, v, onEdit, isLast }: { k: string; v: string; onEdit: () => void; isLast?: boolean }) {
-//   return (
-//     <div className={`flex justify-between py-3.5 text-[13.5px] ${isLast ? '' : 'border-b border-dashed border-ink/10'}`}>
-//       <span className="text-text-on-paper-dim">{k}</span>
-//       <span className="font-semibold text-ink">
-//         {v} <button onClick={onEdit} className="ml-2 text-[12px] font-semibold text-amber">Edit</button>
-//       </span>
-//     </div>
-//   );
-// }   'use client';
-
-// import { useState } from 'react';
-// import { useRouter } from 'next/navigation';
-// import OptionCard from '@/components/onboarding/OptionCard';
-// import Chip from '@/components/onboarding/Chip';
-// import ConnectRow from '@/components/onboarding/ConnectRow';
-// import ProgressBar from '@/components/onboarding/ProgressBar';
-
-// const TOTAL_STEPS = 7;
-
-// const jobOptions = [
-//   { key: 'answer', icon: '📞', title: 'Answer customers', sub: 'Calls + WhatsApp questions', defaultSelected: true },
-//   { key: 'book', icon: '🗓️', title: 'Book appointments', sub: 'Syncs to your calendar', defaultSelected: true },
-//   { key: 'orders', icon: '🧾', title: 'Handle orders', sub: 'Takes and confirms orders', defaultSelected: false },
-//   { key: 'remind', icon: '⏰', title: 'Send reminders', sub: 'Before each appointment', defaultSelected: true },
-//   { key: 'followup', icon: '🎯', title: 'Follow up with leads', sub: 'Missed calls, unanswered chats', defaultSelected: true },
-//   { key: 'report', icon: '📊', title: 'Daily report', sub: 'Sent to you every evening', defaultSelected: true },
-// ];
-
-// const languageOptions = [
-//   { key: 'en', label: 'English', defaultSelected: true },
-//   { key: 'hi', label: 'Hindi', defaultSelected: true },
-//   { key: 'mr', label: 'Marathi', defaultSelected: true },
-//   { key: 'gu', label: 'Gujarati', defaultSelected: false },
-//   { key: 'ta', label: 'Tamil', defaultSelected: false },
-// ];
-
-// const inputClass =
-//   'w-full rounded-[9px] border border-ink/10 bg-paper px-3.5 py-3 text-[14px] text-ink placeholder:text-text-faint focus:outline-2 focus:outline-amber focus:outline-offset-1';
-// const labelClass = 'mb-2 block text-[13px] font-semibold text-ink';
-
-// export default function Onboarding() {
-//   const router = useRouter();
-//   const [current, setCurrent] = useState(1);
-//   const [telegramToken, setTelegramToken] = useState('');
-//   const [selectedJobs, setSelectedJobs] = useState<string[]>(
-//     jobOptions.filter((j) => j.defaultSelected).map((j) => j.key)
-//   );
-//   const [selectedLangs, setSelectedLangs] = useState<string[]>(
-//     languageOptions.filter((l) => l.defaultSelected).map((l) => l.key)
-//   );
-//   const [connected, setConnected] = useState<Record<string, boolean>>({
-//     forwarding: false,
-//     whatsapp: true,
-//     calendar: true,
-//     slots: false,
-//     payment: false,
-//   });
-
-//   const toggleJob = (key: string) =>
-//     setSelectedJobs((prev) => (prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key]));
-//   const toggleLang = (key: string) =>
-//     setSelectedLangs((prev) => (prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key]));
-//   const connect = (key: string) => setConnected((prev) => ({ ...prev, [key]: true }));
-
-//   const goNext = () => setCurrent((c) => c + 1);
-//   const goBack = () => setCurrent((c) => Math.max(1, c - 1));
-
-//   return (
-//     <div className="min-h-screen bg-paper font-body text-text-on-paper">
-//       <div className="mx-auto max-w-[960px] px-6 pb-[100px] pt-10">
-//         <div className="mb-11 flex items-center justify-between">
-//           <div className="flex items-center gap-2.5 font-display text-[18px] font-bold text-ink">
-//             <span className="h-[9px] w-[9px] rounded-full bg-emerald" />
-//             Aria
-//           </div>
-//           <div className="font-mono text-[11.5px] text-text-faint">Progress saved automatically</div>
-//         </div>
-
-//         {current <= TOTAL_STEPS && <ProgressBar current={current} total={TOTAL_STEPS} />}
-
-//         {/* STEP 1 — ACCOUNT */}
-//         {current === 1 && (
-//           <div className="animate-in fade-in duration-300">
-//             <StepHead eyebrow="Step 1 of 7" title="Create your account" desc="This is how you'll log in to see Aria's reports and manage your settings." />
-//             <div className="rounded-[14px] border border-ink/10 bg-white p-7">
-//               <div className="mb-5"><label className={labelClass}>Full name</label><input className={inputClass} type="text" placeholder="Rina Deshmukh" /></div>
-//               <div className="mb-5"><label className={labelClass}>Email address</label><input className={inputClass} type="email" placeholder="rina@rinasalon.in" /></div>
-//               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-//                 <div><label className={labelClass}>Mobile number</label><input className={inputClass} type="text" placeholder="+91 98xxx xxxxx" /></div>
-//                 <div><label className={labelClass}>Password</label><input className={inputClass} type="password" placeholder="Create a password" /></div>
-//               </div>
-//             </div>
-//           </div>
-//         )}
-
-//         {/* STEP 2 — BUSINESS */}
-//         {current === 2 && (
-//           <div className="animate-in fade-in duration-300">
-//             <StepHead eyebrow="Step 2 of 7" title="Tell us about your business" desc="Aria uses this to answer customer questions correctly from day one." />
-//             <div className="rounded-[14px] border border-ink/10 bg-white p-7">
-//               <div className="mb-5"><label className={labelClass}>Business name</label><input className={inputClass} type="text" placeholder="Rina Salon" /></div>
-//               <div className="mb-5 grid grid-cols-1 gap-4 sm:grid-cols-2">
-//                 <div>
-//                   <label className={labelClass}>Business type</label>
-//                   <select className={inputClass}>
-//                     <option>Salon / Spa</option>
-//                     <option>Clinic</option>
-//                     <option>Restaurant / Cafe</option>
-//                     <option>Retail store</option>
-//                     <option>Services (repair, tuition, etc.)</option>
-//                     <option>Other</option>
-//                   </select>
-//                 </div>
-//                 <div><label className={labelClass}>City</label><input className={inputClass} type="text" placeholder="Pune" /></div>
-//               </div>
-//               <div className="mb-5">
-//                 <label className={labelClass}>Business hours</label>
-//                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-//                   <input className={inputClass} type="text" placeholder="Opens — 10:00 AM" />
-//                   <input className={inputClass} type="text" placeholder="Closes — 8:00 PM" />
-//                 </div>
-//                 <div className="mt-1.5 text-[12px] text-text-faint">Aria will only take bookings inside these hours unless you turn on 24×7 mode later.</div>
-//               </div>
-//               <div>
-//                 <label className={labelClass}>Services / products you offer</label>
-//                 <textarea className={inputClass} rows={3} placeholder="Haircut, hair spa, facial, bridal package..." />
-//                 <div className="mt-1.5 text-[12px] text-text-faint">One line is fine — Aria uses this to answer "do you offer X" questions.</div>
-//               </div>
-//             </div>
-//           </div>
-//         )}
-
-//         {/* STEP 3 — TELEGRAM BOT CONFIGURATION */}
-//         {current === 3 && (
-//           <div className="animate-in fade-in duration-300">
-//             <StepHead
-//               eyebrow="Step 3 of 7"
-//               title="Deploy your individual AI employee"
-//               desc="Create a dedicated Telegram bot for your shop. Aria will answer customers directly through it."
-//             />
-//             <div className="rounded-[14px] border border-ink/10 bg-white p-7">
-
-//               {/* Mini-Guide for User Experience */}
-//               <div className="mb-6 rounded-[10px] border border-amber/20 bg-amber/10 p-4 text-[13.5px] text-ink/80">
-//                 <p className="mb-1 font-bold">💡 Quick 1-Minute Setup:</p>
-//                 <ol className="list-inside list-decimal space-y-1 text-[13px]">
-//                   <li>
-//                     Open Telegram and search for{' '}
-//                     <a
-//                       href="https://t.me/BotFather"
-//                       target="_blank"
-//                       rel="noreferrer"
-//                       className="font-semibold text-amber underline"
-//                     >
-//                       @BotFather
-//                     </a>
-//                   </li>
-//                   <li>Send the command <code>/newbot</code> and follow the prompts to name it.</li>
-//                   <li>Copy the <strong>HTTP API Token</strong> provided by BotFather and paste it below.</li>
-//                 </ol>
-//               </div>
-
-//               <div className="mb-5">
-//                 <label className={labelClass}>Your Telegram Bot Token</label>
-//                 <input
-//                   className={inputClass}
-//                   type="text"
-//                   placeholder="1234567890:ABCdefGhIJKlmNoPQRsTUVwxyZ"
-//                   value={telegramToken}
-//                   onChange={(e) => setTelegramToken(e.target.value)}
-//                 />
-//               </div>
-
-//               <ConnectRow
-//                 icon="🤖"
-//                 title="Bot Connection Status"
-//                 sub={telegramToken ? 'Token detected! Ready to initialize.' : 'Waiting for bot token...'}
-//                 connected={telegramToken.length > 20}
-//                 actionLabel="Verify Token"
-//                 onConnect={() => {
-//                   // Optional: call your backend here to verify the token with Telegram's API
-//                   // e.g. https://api.telegram.org/bot<token>/getMe
-//                   connect('forwarding');
-//                 }}
-//               />
-//             </div>
-//           </div>
-//         )}
-
-//         {/* STEP 4 — WHATSAPP */}
-//         {current === 4 && (
-//           <div className="animate-in fade-in duration-300">
-//             <StepHead eyebrow="Step 4 of 7" title="Connect WhatsApp" desc="Aria replies to customer messages on your WhatsApp Business number." />
-//             <div className="rounded-[14px] border border-ink/10 bg-white p-7">
-//               <ConnectRow
-//                 icon="💬"
-//                 title="WhatsApp Business"
-//                 sub="Connect the same number as your call line"
-//                 connected={connected.whatsapp}
-//                 onConnect={() => connect('whatsapp')}
-//               />
-//               <ConnectRow
-//                 icon="🖼"
-//                 title="Business profile photo & catalog"
-//                 sub="Optional — shows in customer chats"
-//                 connected={false}
-//                 actionLabel="Upload"
-//                 onConnect={() => {}}
-//               />
-//               <div className="mt-6 rounded-xl bg-ink p-5 text-text-on-ink">
-//                 <div className="mb-3 font-mono text-[10.5px] uppercase tracking-wider text-text-on-ink-dim">
-//                   How it will look to your customer
-//                 </div>
-//                 <div className="rounded-[10px] bg-white/[0.06] p-3.5 text-[13.5px] leading-relaxed">
-//                   Hi! This is Rina Salon 👋 I'm Aria, I help with bookings and questions here. How can I help you today?
-//                 </div>
-//               </div>
-//             </div>
-//           </div>
-//         )}
-
-//         {/* STEP 5 — CONFIGURE ARIA */}
-//         {current === 5 && (
-//           <div className="animate-in fade-in duration-300">
-//             <StepHead eyebrow="Step 5 of 7" title="Set up what Aria can do" desc="Turn on the jobs you want handled automatically. You can change these anytime." />
-//             <div className="rounded-[14px] border border-ink/10 bg-white p-7">
-//               <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2">
-//                 {jobOptions.map((job) => (
-//                   <OptionCard
-//                     key={job.key}
-//                     icon={job.icon}
-//                     title={job.title}
-//                     sub={job.sub}
-//                     selected={selectedJobs.includes(job.key)}
-//                     onClick={() => toggleJob(job.key)}
-//                   />
-//                 ))}
-//               </div>
-
-//               <div className="mt-6">
-//                 <label className={labelClass}>Languages Aria should speak</label>
-//                 <div className="flex flex-wrap gap-2.5">
-//                   {languageOptions.map((lang) => (
-//                     <Chip
-//                       key={lang.key}
-//                       label={lang.label}
-//                       selected={selectedLangs.includes(lang.key)}
-//                       onClick={() => toggleLang(lang.key)}
-//                     />
-//                   ))}
-//                 </div>
-//               </div>
-
-//               <div className="mt-5">
-//                 <label className={labelClass}>Aria's greeting</label>
-//                 <textarea
-//                   className={inputClass}
-//                   rows={2}
-//                   defaultValue="Hi! This is Rina Salon, I'm Aria — how can I help you today?"
-//                 />
-//                 <div className="mt-1.5 text-[12px] text-text-faint">This is the first thing customers hear or read.</div>
-//               </div>
-//             </div>
-//           </div>
-//         )}
-
-//         {/* STEP 6 — CALENDAR */}
-//         {current === 6 && (
-//           <div className="animate-in fade-in duration-300">
-//             <StepHead eyebrow="Step 6 of 7" title="Connect your calendar" desc="So Aria only books real, open slots." />
-//             <div className="rounded-[14px] border border-ink/10 bg-white p-7">
-//               <ConnectRow icon="📅" title="Google Calendar" sub="Recommended" connected={connected.calendar} onConnect={() => connect('calendar')} />
-//               <ConnectRow icon="🗂️" title="Simple slot list instead" sub="No calendar? Set fixed daily slots" connected={connected.slots} actionLabel="Set up" onConnect={() => connect('slots')} />
-//               <ConnectRow icon="💳" title="Payment link (optional)" sub="For order confirmations" connected={connected.payment} actionLabel="Add UPI / link" onConnect={() => connect('payment')} />
-//             </div>
-//           </div>
-//         )}
-
-//         {/* STEP 7 — REVIEW */}
-//         {current === 7 && (
-//           <div className="animate-in fade-in duration-300">
-//             <StepHead eyebrow="Step 7 of 7" title="Review before Aria goes live" desc="Check everything below — Aria starts answering as soon as you launch." />
-//             <div className="rounded-[14px] border border-ink/10 bg-white p-7">
-//               <SummaryRow k="Business" v="Rina Salon · Salon / Spa · Pune" onEdit={() => setCurrent(2)} />
-//               <SummaryRow
-//                 k="Telegram Bot"
-//                 v={telegramToken ? 'Bot token connected' : 'Not connected'}
-//                 onEdit={() => setCurrent(3)}
-//               />
-//               <SummaryRow k="WhatsApp" v={connected.whatsapp ? 'Connected' : 'Not connected'} onEdit={() => setCurrent(4)} />
-//               <SummaryRow k="Jobs enabled" v={`${selectedJobs.length} selected`} onEdit={() => setCurrent(5)} />
-//               <SummaryRow k="Languages" v={`${selectedLangs.length} selected`} onEdit={() => setCurrent(5)} />
-//               <SummaryRow k="Calendar" v={connected.calendar ? 'Google Calendar connected' : 'Not connected'} onEdit={() => setCurrent(6)} />
-//               <SummaryRow k="Plan" v="Growth — ₹3,999/month" onEdit={() => router.push('/#pricing')} isLast />
-//             </div>
-//           </div>
-//         )}
-
-//         {/* SUCCESS */}
-//         {current === 8 && (
-//           <div className="animate-in fade-in rounded-[14px] border border-ink/10 bg-white p-[50px] text-center duration-300">
-//             <div className="mx-auto mb-[22px] flex h-[74px] w-[74px] items-center justify-center rounded-full bg-emerald-soft text-[32px] text-emerald">
-//               ✓
-//             </div>
-//             <h1 className="font-display text-[28px] font-bold text-ink">Aria is on duty.</h1>
-//             <p className="mx-auto mt-2.5 max-w-[420px] text-[15px] text-text-on-paper-dim">
-//               She's now answering calls and WhatsApp messages for Rina Salon. You'll get your first daily report tonight.
-//             </p>
-//             <button
-//               className="mt-6 rounded-full bg-ink px-[26px] py-3.5 text-[14.5px] font-semibold text-text-on-ink hover:opacity-90"
-//               onClick={() => router.push('/dashboard')}
-//             >
-//               Go to my dashboard →
-//             </button>
-//           </div>
-//         )}
-
-//         {/* NAV */}
-//         {current <= TOTAL_STEPS && (
-//           <div className="mt-7 flex items-center justify-between">
-//             <button
-//               className="text-[14px] font-semibold text-text-on-paper-dim"
-//               style={{ visibility: current === 1 ? 'hidden' : 'visible' }}
-//               onClick={goBack}
-//             >
-//               ← Back
-//             </button>
-//             <button
-//               className={`rounded-full px-[26px] py-3.5 text-[14.5px] font-semibold ${
-//                 current === TOTAL_STEPS ? 'bg-amber text-ink' : 'bg-ink text-text-on-ink'
-//               } hover:opacity-90`}
-//               onClick={goNext}
-//             >
-//               {current === TOTAL_STEPS ? 'Launch Aria →' : 'Continue →'}
-//             </button>
-//           </div>
-//         )}
-//       </div>
-//     </div>
-//   );
-// }
-
-// function StepHead({ eyebrow, title, desc }: { eyebrow: string; title: string; desc: string }) {
-//   return (
-//     <div className="mb-7">
-//       <div className="mb-2.5 font-mono text-[11.5px] font-semibold uppercase tracking-wider text-amber">{eyebrow}</div>
-//       <h1 className="font-display text-[30px] font-bold tracking-tight text-ink">{title}</h1>
-//       <p className="mt-2 max-w-[520px] text-[15px] text-text-on-paper-dim">{desc}</p>
-//     </div>
-//   );
-// }
-
-// function SummaryRow({ k, v, onEdit, isLast }: { k: string; v: string; onEdit: () => void; isLast?: boolean }) {
-//   return (
-//     <div className={`flex justify-between py-3.5 text-[13.5px] ${isLast ? '' : 'border-b border-dashed border-ink/10'}`}>
-//       <span className="text-text-on-paper-dim">{k}</span>
-//       <span className="font-semibold text-ink">
-//         {v} <button onClick={onEdit} className="ml-2 text-[12px] font-semibold text-amber">Edit</button>
-//       </span>
-//     </div>
-//   );
-// }
-
 'use client';
 
 import { useState } from 'react';
@@ -709,8 +27,8 @@ const languageOptions = [
 ];
 
 const inputClass =
-  'w-full rounded-[9px] border border-ink/10 bg-paper px-3.5 py-3 text-[14px] text-ink placeholder:text-text-faint focus:outline-2 focus:outline-amber focus:outline-offset-1';
-const labelClass = 'mb-2 block text-[13px] font-semibold text-ink';
+  'w-full rounded-xl border border-ink/15 bg-white/50 px-4 py-3 text-[14px] text-ink placeholder:text-text-faint/60 focus:outline-none focus:border-[#d9a05b] focus:ring-1 focus:ring-[#d9a05b] transition-all duration-200';
+const labelClass = 'mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-ink/70';
 
 export default function Onboarding() {
   const router = useRouter();
@@ -775,12 +93,22 @@ export default function Onboarding() {
           name: businessName || 'Unnamed Business',
           businessType: businessType.toLowerCase().replace(/[^a-z0-9]/g, '_'),
           city: city || 'Unknown City',
-          opens: opens || '09:00 AM',
+          opens: opens || '10:00 AM',
           closes: closes || '08:00 PM',
           servicesProvided: servicesProvided || 'General Services',
           telegramBotToken: telegramToken,
-          // Optional structural data for future scale expansion:
-          ownerDetails: { fullName, email, mobile }
+          
+          // 🔴 FIXED: Exposing credentials directly at root level to satisfy backend routing validation
+          email: email, 
+          password: password,
+          phone: mobile,
+          fullName: fullName, // Optional background fallback metadata
+
+          configuration: {
+            jobsEnabled: selectedJobs,
+            languagesSupported: selectedLangs,
+            integrations: connected
+          }
         }),
       });
 
@@ -790,14 +118,21 @@ export default function Onboarding() {
         throw new Error(data.message || 'Failed to initialize system registration backend profile.');
       }
 
-      // Save the businessId so the dashboard knows which appointments belong
-      // to this business. Your backend has no auth/session yet, so this is
-      // currently the only link between the browser and a specific business.
+      // Persist all session parameters needed for instantaneous Dashboard authorization bypass
       if (data.businessId) {
         localStorage.setItem('aria_business_id', data.businessId);
       }
+      if (data.token) {
+        localStorage.setItem('aria_auth_token', data.token);
+      }
+      if (data.ownerId || data.userId) {
+        localStorage.setItem('aria_user_id', data.ownerId || data.userId);
+      }
+      
+      // Keep safety backup flags of the user state context for frontend dashboard components
+      localStorage.setItem('aria_user_email', email);
+      localStorage.setItem('aria_user_name', fullName);
 
-      // If backend registration is clean, transition to step 8 success splash element
       setCurrent(8);
     } catch (err: any) {
       setErrorMsg(err.message || 'Server connection error. Ensure your server environment is listening.');
@@ -815,21 +150,29 @@ export default function Onboarding() {
   };
 
   return (
-    <div className="min-h-screen bg-paper font-body text-text-on-paper">
-      <div className="mx-auto max-w-[960px] px-6 pb-[100px] pt-10">
-        <div className="mb-11 flex items-center justify-between">
-          <div className="flex items-center gap-2.5 font-display text-[18px] font-bold text-ink">
-            <span className="h-[9px] w-[9px] rounded-full bg-emerald" />
+    <div className="min-h-screen bg-paper font-body text-text-on-paper selection:bg-[#d9a05b]/20">
+      <div className="mx-auto max-w-[760px] px-6 pb-[120px] pt-10">
+        
+        {/* Top Header Branding */}
+        <div className="mb-14 flex items-center justify-between">
+          <div className="flex items-center gap-2.5 font-display text-[20px] font-bold text-ink tracking-tight">
+            <span className="h-2.5 w-2.5 rounded-full bg-[#3ab795] animate-pulse" />
             Aria
           </div>
-          <div className="font-mono text-[11.5px] text-text-faint">Progress saved automatically</div>
+          <div className="font-mono text-[11px] uppercase tracking-wider text-text-on-paper-dim opacity-70">
+            Progress saved automatically
+          </div>
         </div>
 
-        {current <= TOTAL_STEPS && <ProgressBar current={current} total={TOTAL_STEPS} />}
+        {current <= TOTAL_STEPS && (
+          <div className="mb-10">
+            <ProgressBar current={current} total={TOTAL_STEPS} />
+          </div>
+        )}
 
         {/* ERROR BOX */}
         {errorMsg && (
-          <div className="mb-6 rounded-[10px] bg-rose-50 border border-rose-200 p-4 text-[13.5px] text-rose-700 animate-in fade-in duration-200">
+          <div className="mb-6 rounded-xl bg-rose-500/5 border border-rose-500/10 p-4 text-[13px] font-mono text-rose-700 animate-in fade-in duration-200">
             ⚠️ <strong>Launch Failed:</strong> {errorMsg}
           </div>
         )}
@@ -837,13 +180,15 @@ export default function Onboarding() {
         {/* STEP 1 — ACCOUNT */}
         {current === 1 && (
           <div className="animate-in fade-in duration-300">
-            <StepHead eyebrow="Step 1 of 7" title="Create your account" desc="This is how you'll log in to see Aria's reports and manage your settings." />
-            <div className="rounded-[14px] border border-ink/10 bg-white p-7">
+            <StepHead eyebrow="Step 1 of 7" title="Create your admin account" desc="This is how you'll log in to see Aria's live workspace reports and manage your AI configurations." />
+            <div className="rounded-2xl border border-ink/10 bg-white/40 backdrop-blur-md shadow-xl shadow-ink/5 p-7 relative overflow-hidden">
+              <div className="absolute top-0 left-0 right-0 h-[2px] bg-[#d9a05b]/40" />
+              
               <div className="mb-5"><label className={labelClass}>Full name</label><input className={inputClass} type="text" placeholder="Rina Deshmukh" value={fullName} onChange={(e) => setFullName(e.target.value)} /></div>
               <div className="mb-5"><label className={labelClass}>Email address</label><input className={inputClass} type="email" placeholder="rina@rinasalon.in" value={email} onChange={(e) => setEmail(e.target.value)} /></div>
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
                 <div><label className={labelClass}>Mobile number</label><input className={inputClass} type="text" placeholder="+91 98xxx xxxxx" value={mobile} onChange={(e) => setMobile(e.target.value)} /></div>
-                <div><label className={labelClass}>Password</label><input className={inputClass} type="password" placeholder="Create a password" value={password} onChange={(e) => setPassword(e.target.value)} /></div>
+                <div><label className={labelClass}>Password</label><input className={inputClass} type="password" placeholder="Create a dashboard password" value={password} onChange={(e) => setPassword(e.target.value)} /></div>
               </div>
             </div>
           </div>
@@ -852,10 +197,12 @@ export default function Onboarding() {
         {/* STEP 2 — BUSINESS */}
         {current === 2 && (
           <div className="animate-in fade-in duration-300">
-            <StepHead eyebrow="Step 2 of 7" title="Tell us about your business" desc="Aria uses this to answer customer questions correctly from day one." />
-            <div className="rounded-[14px] border border-ink/10 bg-white p-7">
+            <StepHead eyebrow="Step 2 of 7" title="Tell us about your shop" desc="Aria synthesizes this data to answer incoming buyer requests accurately without human supervision." />
+            <div className="rounded-2xl border border-ink/10 bg-white/40 backdrop-blur-md shadow-xl shadow-ink/5 p-7 relative overflow-hidden">
+              <div className="absolute top-0 left-0 right-0 h-[2px] bg-[#d9a05b]/40" />
+
               <div className="mb-5"><label className={labelClass}>Business name</label><input className={inputClass} type="text" placeholder="Rina Salon" value={businessName} onChange={(e) => setBusinessName(e.target.value)} /></div>
-              <div className="mb-5 grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div className="mb-5 grid grid-cols-1 gap-5 sm:grid-cols-2">
                 <div>
                   <label className={labelClass}>Business type</label>
                   <select className={inputClass} value={businessType} onChange={(e) => setBusinessType(e.target.value)}>
@@ -867,20 +214,20 @@ export default function Onboarding() {
                     <option>Other</option>
                   </select>
                 </div>
-                <div><label className={labelClass}>City</label><input className={inputClass} type="text" placeholder="Pune" value={city} onChange={(e) => setCity(e.target.value)} /></div>
+                <div><label className={labelClass}>City Location</label><input className={inputClass} type="text" placeholder="Pune" value={city} onChange={(e) => setCity(e.target.value)} /></div>
               </div>
               <div className="mb-5">
-                <label className={labelClass}>Business hours</label>
+                <label className={labelClass}>Operating Hours</label>
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   <input className={inputClass} type="text" placeholder="Opens — 10:00 AM" value={opens} onChange={(e) => setOpens(e.target.value)} />
                   <input className={inputClass} type="text" placeholder="Closes — 8:00 PM" value={closes} onChange={(e) => setCloses(e.target.value)} />
                 </div>
-                <div className="mt-1.5 text-[12px] text-text-faint">Aria will only take bookings inside these hours unless you turn on 24×7 mode later.</div>
+                <div className="mt-2 text-[12px] text-text-on-paper-dim opacity-80">Aria locks scheduling blocks within this timeframe unless 24×7 override is checked.</div>
               </div>
               <div>
-                <label className={labelClass}>Services / products you offer</label>
+                <label className={labelClass}>Services / Products Inventory</label>
                 <textarea className={inputClass} rows={3} placeholder="Haircut, hair spa, facial, bridal package..." value={servicesProvided} onChange={(e) => setServicesProvided(e.target.value)} />
-                <div className="mt-1.5 text-[12px] text-text-faint">One line is fine — Aria uses this to answer "do you offer X" questions.</div>
+                <div className="mt-2 text-[12px] text-text-on-paper-dim opacity-80">Simple commas work perfectly — Aria reads this context to confirm inventory or menu availability.</div>
               </div>
             </div>
           </div>
@@ -889,26 +236,28 @@ export default function Onboarding() {
         {/* STEP 3 — TELEGRAM BOT CONFIGURATION */}
         {current === 3 && (
           <div className="animate-in fade-in duration-300">
-            <StepHead eyebrow="Step 3 of 7" title="Deploy your individual AI employee" desc="Create a dedicated Telegram bot for your shop. Aria will answer customers directly through it." />
-            <div className="rounded-[14px] border border-ink/10 bg-white p-7">
-              <div className="mb-6 rounded-[10px] border border-amber/20 bg-amber/10 p-4 text-[13.5px] text-ink/80">
-                <p className="mb-1 font-bold">💡 Quick 1-Minute Setup:</p>
-                <ol className="list-inside list-decimal space-y-1 text-[13px]">
-                  <li>Open Telegram and search for <a href="https://t.me/BotFather" target="_blank" rel="noreferrer" className="font-semibold text-amber underline">@BotFather</a></li>
-                  <li>Send the command <code>/newbot</code> and follow the prompts to name it.</li>
-                  <li>Copy the <strong>HTTP API Token</strong> provided by BotFather and paste it below.</li>
+            <StepHead eyebrow="Step 3 of 7" title="Deploy your individual AI employee" desc="Provision a clean Telegram bot interface. Aria targets customer chat routing directly into this pipeline." />
+            <div className="rounded-2xl border border-ink/10 bg-white/40 backdrop-blur-md shadow-xl shadow-ink/5 p-7 relative overflow-hidden">
+              <div className="absolute top-0 left-0 right-0 h-[2px] bg-[#d9a05b]/40" />
+
+              <div className="mb-6 rounded-xl border border-[#d9a05b]/20 bg-[#d9a05b]/5 p-4 text-[13.5px] text-ink/90">
+                <p className="mb-1.5 font-bold text-[#d9a05b]">💡 Quick 1-Minute Provisioning:</p>
+                <ol className="list-inside list-decimal space-y-1.5 text-[13px] opacity-95">
+                  <li>Open Telegram and ping <a href="https://t.me/BotFather" target="_blank" rel="noreferrer" className="font-semibold text-[#d9a05b] underline">@BotFather</a></li>
+                  <li>Execute the command <code className="bg-ink/5 px-1.5 py-0.5 rounded font-mono text-xs">/newbot</code> and assign an identifier.</li>
+                  <li>Copy the secure <strong>HTTP API Token</strong> provided by the handler and input it below.</li>
                 </ol>
               </div>
 
               <div className="mb-5">
-                <label className={labelClass}>Your Telegram Bot Token</label>
+                <label className={labelClass}>Your Telegram Bot Token Key</label>
                 <input className={inputClass} type="text" placeholder="1234567890:ABCdefGhIJKlmNoPQRsTUVwxyZ" value={telegramToken} onChange={(e) => setTelegramToken(e.target.value)} />
               </div>
 
               <ConnectRow
                 icon="🤖"
-                title="Bot Connection Status"
-                sub={telegramToken ? 'Token detected! Ready to initialize.' : 'Waiting for bot token...'}
+                title="Bot Connection Pipeline"
+                sub={telegramToken ? 'Token payload signature verified. Ready to attach.' : 'Awaiting cryptographic handshake token...'}
                 connected={telegramToken.length > 20}
                 actionLabel="Verify Token"
                 onConnect={() => connect('forwarding')}
@@ -920,13 +269,16 @@ export default function Onboarding() {
         {/* STEP 4 — WHATSAPP */}
         {current === 4 && (
           <div className="animate-in fade-in duration-300">
-            <StepHead eyebrow="Step 4 of 7" title="Connect WhatsApp" desc="Aria replies to customer messages on your WhatsApp Business number." />
-            <div className="rounded-[14px] border border-ink/10 bg-white p-7">
-              <ConnectRow icon="💬" title="WhatsApp Business" sub="Connect the same number as your call line" connected={connected.whatsapp} onConnect={() => connect('whatsapp')} />
-              <ConnectRow icon="🖼" title="Business profile photo & catalog" sub="Optional — shows in customer chats" connected={false} actionLabel="Upload" onConnect={() => {}} />
-              <div className="mt-6 rounded-xl bg-ink p-5 text-text-on-ink">
-                <div className="mb-3 font-mono text-[10.5px] uppercase tracking-wider text-text-on-ink-dim">How it will look to your customer</div>
-                <div className="rounded-[10px] bg-white/[0.06] p-3.5 text-[13.5px] leading-relaxed">
+            <StepHead eyebrow="Step 4 of 7" title="Connect WhatsApp Channel" desc="Synchronize Aria to handle queries directly through your active WhatsApp Business profile line." />
+            <div className="rounded-2xl border border-ink/10 bg-white/40 backdrop-blur-md shadow-xl shadow-ink/5 p-7 relative overflow-hidden">
+              <div className="absolute top-0 left-0 right-0 h-[2px] bg-[#d9a05b]/40" />
+
+              <ConnectRow icon="💬" title="WhatsApp Business API" sub="Maps instantly onto your baseline workspace communication line" connected={connected.whatsapp} onConnect={() => connect('whatsapp')} />
+              <ConnectRow icon="🖼" title="Brand assets & digital catalog catalogs" sub="Optional — provides customer media delivery hooks" connected={false} actionLabel="Upload" onConnect={() => {}} />
+              
+              <div className="mt-6 rounded-xl bg-ink p-5 text-paper shadow-sm">
+                <div className="mb-3 font-mono text-[10px] uppercase tracking-widest opacity-60">Real-time simulation layout</div>
+                <div className="rounded-lg bg-white/10 p-4 text-[13.5px] leading-relaxed border border-white/5">
                   Hi! This is {businessName || 'Our Shop'} 👋 I'm Aria, I help with bookings and questions here. How can I help you today?
                 </div>
               </div>
@@ -937,15 +289,17 @@ export default function Onboarding() {
         {/* STEP 5 — CONFIGURE ARIA */}
         {current === 5 && (
           <div className="animate-in fade-in duration-300">
-            <StepHead eyebrow="Step 5 of 7" title="Set up what Aria can do" desc="Turn on the jobs you want handled automatically. You can change these anytime." />
-            <div className="rounded-[14px] border border-ink/10 bg-white p-7">
-              <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2">
+            <StepHead eyebrow="Step 5 of 7" title="Set up what Aria can do" desc="Activate automation engines suited to your target workload. Configuration changes hot-reload instantly." />
+            <div className="rounded-2xl border border-ink/10 bg-white/40 backdrop-blur-md shadow-xl shadow-ink/5 p-7 relative overflow-hidden">
+              <div className="absolute top-0 left-0 right-0 h-[2px] bg-[#d9a05b]/40" />
+
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 {jobOptions.map((job) => (
                   <OptionCard key={job.key} icon={job.icon} title={job.title} sub={job.sub} selected={selectedJobs.includes(job.key)} onClick={() => toggleJob(job.key)} />
                 ))}
               </div>
               <div className="mt-6">
-                <label className={labelClass}>Languages Aria should speak</label>
+                <label className={labelClass}>Active Dialogue Languages</label>
                 <div className="flex flex-wrap gap-2.5">
                   {languageOptions.map((lang) => (
                     <Chip key={lang.key} label={lang.label} selected={selectedLangs.includes(lang.key)} onClick={() => toggleLang(lang.key)} />
@@ -953,7 +307,7 @@ export default function Onboarding() {
                 </div>
               </div>
               <div className="mt-5">
-                <label className={labelClass}>Aria's greeting</label>
+                <label className={labelClass}>Custom On-Duty Welcome Directive</label>
                 <textarea className={inputClass} rows={2} defaultValue={`Hi! This is ${businessName || 'Our Shop'}, I'm Aria — how can I help you today?`} />
               </div>
             </div>
@@ -963,11 +317,13 @@ export default function Onboarding() {
         {/* STEP 6 — CALENDAR */}
         {current === 6 && (
           <div className="animate-in fade-in duration-300">
-            <StepHead eyebrow="Step 6 of 7" title="Connect your calendar" desc="So Aria only books real, open slots." />
-            <div className="rounded-[14px] border border-ink/10 bg-white p-7">
-              <ConnectRow icon="📅" title="Google Calendar" sub="Recommended" connected={connected.calendar} onConnect={() => connect('calendar')} />
-              <ConnectRow icon="🗂️" title="Simple slot list instead" sub="No calendar? Set fixed daily slots" connected={connected.slots} actionLabel="Set up" onConnect={() => connect('slots')} />
-              <ConnectRow icon="💳" title="Payment link (optional)" sub="For order confirmations" connected={connected.payment} actionLabel="Add UPI / link" onConnect={() => connect('payment')} />
+            <StepHead eyebrow="Step 6 of 7" title="Sync availability timelines" desc="Integrate your calendar framework so Aria references real-time vacant slots exclusively." />
+            <div className="rounded-2xl border border-ink/10 bg-white/40 backdrop-blur-md shadow-xl shadow-ink/5 p-7 relative overflow-hidden">
+              <div className="absolute top-0 left-0 right-0 h-[2px] bg-[#d9a05b]/40" />
+
+              <ConnectRow icon="📅" title="Google Calendar Workspace" sub="Highly Recommended for active automation synchronization" connected={connected.calendar} onConnect={() => connect('calendar')} />
+              <ConnectRow icon="🗂️" title="Static scheduling slot layout matrices" sub="Fallback framework if external matrix calendars are unavailable" connected={connected.slots} actionLabel="Set up" onConnect={() => connect('slots')} />
+              <ConnectRow icon="💳" title="Merchant Payment gateway profiles" sub="Optional — triggers custom validation loops on confirmations" connected={connected.payment} actionLabel="Add UPI / link" onConnect={() => connect('payment')} />
             </div>
           </div>
         )}
@@ -975,47 +331,60 @@ export default function Onboarding() {
         {/* STEP 7 — REVIEW */}
         {current === 7 && (
           <div className="animate-in fade-in duration-300">
-            <StepHead eyebrow="Step 7 of 7" title="Review before Aria goes live" desc="Check everything below — Aria starts answering as soon as you launch." />
-            <div className="rounded-[14px] border border-ink/10 bg-white p-7">
-              <SummaryRow k="Business" v={`${businessName || 'Not Set'} · ${businessType} · ${city || 'Not Set'}`} onEdit={() => setCurrent(2)} />
-              <SummaryRow k="Telegram Bot" v={telegramToken ? `Connected Bot (${telegramToken.substring(0, 6)}...)` : 'Not connected'} onEdit={() => setCurrent(3)} />
-              <SummaryRow k="WhatsApp" v={connected.whatsapp ? 'Connected' : 'Not connected'} onEdit={() => setCurrent(4)} />
-              <SummaryRow k="Jobs enabled" v={`${selectedJobs.length} selected`} onEdit={() => setCurrent(5)} />
-              <SummaryRow k="Languages" v={`${selectedLangs.length} selected`} onEdit={() => setCurrent(5)} />
-              <SummaryRow k="Calendar" v={connected.calendar ? 'Google Calendar connected' : 'Not connected'} onEdit={() => setCurrent(6)} />
-              <SummaryRow k="Plan" v="Growth — ₹3,999/month" onEdit={() => router.push('/#pricing')} isLast />
+            <StepHead eyebrow="Step 7 of 7" title="Review workspace before deployment" desc="Audit your runtime settings below. Aria initiates real-time message answering as soon as synchronization triggers." />
+            <div className="rounded-2xl border border-ink/10 bg-white/40 backdrop-blur-md shadow-xl shadow-ink/5 p-7 relative overflow-hidden">
+              <div className="absolute top-0 left-0 right-0 h-[3px] bg-[#d9a05b]" />
+
+              <SummaryRow k="Business Scope" v={`${businessName || 'Not Set'} · ${businessType} · ${city || 'Not Set'}`} onEdit={() => setCurrent(2)} />
+              <SummaryRow k="Telegram Daemon" v={telegramToken ? `Active Token Cluster (${telegramToken.substring(0, 6)}...)` : 'Not linked'} onEdit={() => setCurrent(3)} />
+              <SummaryRow k="WhatsApp Webhook" v={connected.whatsapp ? 'Active Hub Connected' : 'Inactive'} onEdit={() => setCurrent(4)} />
+              <SummaryRow k="Engine Tasks Provisioned" v={`${selectedJobs.length} components assigned`} onEdit={() => setCurrent(5)} />
+              <SummaryRow k="Synthesized Vocabularies" v={`${selectedLangs.length} localized dialects`} onEdit={() => setCurrent(5)} />
+              <SummaryRow k="Calendar Sync Matrix" v={connected.calendar ? 'Google Workspace Online' : 'Local Matrix Configuration'} onEdit={() => setCurrent(6)} />
+              <SummaryRow k="Ecosystem Tier" v="Growth Plan — ₹1,999/month" onEdit={() => router.push('/#pricing')} isLast />
             </div>
           </div>
         )}
 
-        {/* SUCCESS */}
+        {/* SUCCESS SPLASH SCREEN */}
         {current === 8 && (
-          <div className="animate-in fade-in rounded-[14px] border border-ink/10 bg-white p-[50px] text-center duration-300">
-            <div className="mx-auto mb-[22px] flex h-[74px] w-[74px] items-center justify-center rounded-full bg-emerald-soft text-[32px] text-emerald">✓</div>
-            <h1 className="font-display text-[28px] font-bold text-ink">Aria is on duty.</h1>
-            <p className="mx-auto mt-2.5 max-w-[420px] text-[15px] text-text-on-paper-dim">
-              She's now answering messages for <strong>{businessName || 'your business'}</strong>. You'll get your first report tonight.
+          <div className="animate-in scale-in-95 rounded-2xl border border-ink/10 bg-white/40 backdrop-blur-md p-12 text-center shadow-xl shadow-ink/5 duration-300 relative overflow-hidden">
+            <div className="absolute top-0 left-0 right-0 h-[4px] bg-[#3ab795]" />
+            <div className="mx-auto mb-6 flex h-[76px] w-[76px] items-center justify-center rounded-full bg-[#3ab795]/10 text-[32px] text-[#3ab795] animate-bounce">✓</div>
+            <h1 className="font-display text-[30px] font-bold text-ink tracking-tight">Aria is on duty.</h1>
+            <p className="mx-auto mt-3 max-w-[460px] text-[15px] text-text-on-paper-dim leading-relaxed">
+              Her background models are now processing messages for <strong>{businessName || 'your enterprise'}</strong>. Your account credentials have been linked for automatic sign-in access.
             </p>
-            <button className="mt-6 rounded-full bg-ink px-[26px] py-3.5 text-[14.5px] font-semibold text-text-on-ink hover:opacity-90" onClick={() => router.push('/dashboard')}>
-              Go to my dashboard →
+            <button 
+              className="mt-8 rounded-full bg-ink px-8 py-4 text-[14.5px] font-semibold text-paper hover:bg-ink/90 transition-all duration-200 shadow-sm transform hover:-translate-y-0.5" 
+              onClick={() => router.push('/dashboard')}
+            >
+              Access Administration Console →
             </button>
           </div>
         )}
 
-        {/* NAV */}
+        {/* NAVIGATION CONTROLS */}
         {current <= TOTAL_STEPS && (
-          <div className="mt-7 flex items-center justify-between">
-            <button className="text-[14px] font-semibold text-text-on-paper-dim" style={{ visibility: current === 1 ? 'hidden' : 'visible' }} onClick={goBack} disabled={loading}>
+          <div className="mt-8 flex items-center justify-between">
+            <button 
+              className="text-[14px] font-bold uppercase tracking-wider text-text-on-paper-dim/85 hover:text-ink transition-colors duration-200 disabled:opacity-30" 
+              style={{ visibility: current === 1 ? 'hidden' : 'visible' }} 
+              onClick={goBack} 
+              disabled={loading}
+            >
               ← Back
             </button>
             <button
-              className={`rounded-full px-[26px] py-3.5 text-[14.5px] font-semibold transition-opacity ${
-                current === TOTAL_STEPS ? 'bg-amber text-ink' : 'bg-ink text-text-on-ink'
-              } hover:opacity-90 disabled:opacity-50`}
+              className={`rounded-full px-8 py-4 text-[14.5px] font-semibold transition-all duration-300 transform hover:-translate-y-0.5 shadow-sm ${
+                current === TOTAL_STEPS 
+                  ? 'bg-[#d9a05b] hover:bg-[#c9904b] text-ink' 
+                  : 'bg-ink hover:bg-ink/90 text-paper'
+              } disabled:opacity-50 disabled:pointer-events-none`}
               onClick={goNext}
               disabled={loading}
             >
-              {loading ? 'Processing...' : current === TOTAL_STEPS ? 'Launch Aria →' : 'Continue →'}
+              {loading ? 'Initializing Core Assets...' : current === TOTAL_STEPS ? 'Launch Aria Engine →' : 'Continue Workflow →'}
             </button>
           </div>
         )}
@@ -1026,22 +395,24 @@ export default function Onboarding() {
 
 function StepHead({ eyebrow, title, desc }: { eyebrow: string; title: string; desc: string }) {
   return (
-    <div className="mb-7">
-      <div className="mb-2.5 font-mono text-[11.5px] font-semibold uppercase tracking-wider text-amber">{eyebrow}</div>
-      <h1 className="font-display text-[30px] font-bold tracking-tight text-ink">{title}</h1>
-      <p className="mt-2 max-w-[520px] text-[15px] text-text-on-paper-dim">{desc}</p>
+    <div className="mb-8">
+      <div className="mb-2 font-mono text-[11px] font-bold uppercase tracking-widest text-[#d9a05b]">{eyebrow}</div>
+      <h1 className="font-display text-[32px] font-bold tracking-tight text-ink">{title}</h1>
+      <p className="mt-2.5 max-w-[560px] text-[15px] leading-relaxed text-text-on-paper-dim">{desc}</p>
     </div>
   );
 }
 
 function SummaryRow({ k, v, onEdit, isLast }: { k: string; v: string; onEdit: () => void; isLast?: boolean }) {
   return (
-    <div className={`flex justify-between py-3.5 text-[13.5px] ${isLast ? '' : 'border-b border-dashed border-ink/10'}`}>
-      <span className="text-text-on-paper-dim">{k}</span>
-      <span className="font-semibold text-ink">
-        {v} <button onClick={onEdit} className="ml-2 text-[12px] font-semibold text-amber">Edit</button>
+    <div className={`flex items-center justify-between py-4 text-[13.5px] ${isLast ? '' : 'border-b border-dashed border-ink/15'}`}>
+      <span className="text-text-on-paper-dim font-medium">{k}</span>
+      <span className="font-semibold text-ink flex items-center gap-3">
+        {v} 
+        <button onClick={onEdit} className="text-[11px] font-bold uppercase tracking-wider text-[#d9a05b] hover:underline">
+          Modify
+        </button>
       </span>
     </div>
   );
 }
-

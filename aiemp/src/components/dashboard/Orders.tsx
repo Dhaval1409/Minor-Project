@@ -38,7 +38,14 @@ export function Orders() {
                   <TableCell>{order.items}</TableCell>
                   <TableCell className="font-mono text-emerald-500">{order.amount}</TableCell>
                   <TableCell>
-                    <Badge variant={order.status === 'Confirmed' ? 'default' : 'warning'}>
+                    <Badge 
+                      variant={order.status === 'Confirmed' ? 'default' : 'secondary'}
+                      className={
+                        order.status !== 'Confirmed' 
+                          ? 'bg-amber-500 text-white hover:bg-amber-600 dark:bg-amber-600 dark:hover:bg-amber-700 border-transparent' 
+                          : ''
+                      }
+                    >
                       {order.status}
                     </Badge>
                   </TableCell>

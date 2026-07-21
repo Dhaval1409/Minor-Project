@@ -6,7 +6,7 @@
  * so that controllers do not break.
  */
 
-import { Schema, model, Document } from "mongoose";
+import { Schema, model, models, Document } from "mongoose";
 import { v4 as uuidv4 } from "uuid";
 
 // ---------------------------------------------------------------------------
@@ -109,9 +109,9 @@ interface IAppointmentDoc extends Document {
 
 const AppointmentSchema = new Schema<IAppointmentDoc>(
   {
-    id: { type: String, required: true, unique: true },
-    businessId: { type: String, default: "" },
-    userId: { type: String, required: true },
+    id: { type: String, required: true, unique: true, index: true },
+    businessId: { type: String, default: "", index: true },
+    userId: { type: String, required: true, index: true },
     name: { type: String, required: true, trim: true },
     phone: { type: String, required: true, trim: true },
     businessType: { type: String, required: true },
@@ -123,7 +123,7 @@ const AppointmentSchema = new Schema<IAppointmentDoc>(
   { 
     timestamps: true,
     toJSON: {
-      transform: (doc, ret: any) => {
+      transform: (doc, ret: Record<string, any>) => {
         delete ret._id;
         delete ret.__v;
         if (ret.createdAt instanceof Date) ret.createdAt = ret.createdAt.toISOString();
@@ -134,15 +134,26 @@ const AppointmentSchema = new Schema<IAppointmentDoc>(
   }
 );
 
-// Check if model already compiled to prevent HMR recompilation errors
-const MongooseAppointmentModel = model<IAppointmentDoc>("Appointment", AppointmentSchema);
+// Check models cache to prevent HMR recompilation errors
+const MongooseAppointmentModel = 
+  models.Appointment || model<IAppointmentDoc>("Appointment", AppointmentSchema);
 
 // ---------------------------------------------------------------------------
 // Synchronous-wrapper Database Layer mapped to Mongoose Async Promises
 // ---------------------------------------------------------------------------
 
 function deHydrate(doc: any): Appointment {
-  return doc ? (doc.toJSON() as Appointment) : (undefined as any);
+  if (!doc) return undefined as any;
+  // If it's already a plain object via lean()
+  if (typeof doc.toJSON !== "function") {
+    const { _id, __v, ...rest } = doc;
+    return {
+      ...rest,
+      createdAt: doc.createdAt instanceof Date ? doc.createdAt.toISOString() : doc.createdAt,
+      updatedAt: doc.updatedAt instanceof Date ? doc.updatedAt.toISOString() : doc.updatedAt,
+    } as Appointment;
+  }
+  return doc.toJSON() as Appointment;
 }
 
 export const AppointmentModel = {
@@ -165,17 +176,17 @@ export const AppointmentModel = {
   },
 
   async findAll(): Promise<Appointment[]> {
-    const docs = await MongooseAppointmentModel.find().sort({ createdAt: -1 });
+    const docs = await MongooseAppointmentModel.find().sort({ createdAt: -1 }).lean();
     return docs.map(doc => deHydrate(doc));
   },
 
   async findById(id: string): Promise<Appointment | undefined> {
-    const doc = await MongooseAppointmentModel.findOne({ id });
+    const doc = await MongooseAppointmentModel.findOne({ id }).lean();
     return doc ? deHydrate(doc) : undefined;
   },
 
   async findByUserId(userId: string): Promise<Appointment[]> {
-    const docs = await MongooseAppointmentModel.find({ userId });
+    const docs = await MongooseAppointmentModel.find({ userId }).sort({ createdAt: -1 }).lean();
     return docs.map(doc => deHydrate(doc));
   },
 

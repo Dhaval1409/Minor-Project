@@ -60,14 +60,14 @@ export function Reports() {
                 <span className="text-text-on-paper-dim">Voice calls</span>
                 <span className="text-emerald font-mono font-semibold">62%</span>
               </div>
-              <Progress value={62} className="h-2 bg-emerald/10 rounded-full" indicatorClassName="bg-emerald" />
+              <Progress value={62} className="h-2 bg-emerald/10 rounded-full [&>div]:bg-emerald" />
             </div>
             <div>
               <div className="flex justify-between text-[13px] font-medium mb-2">
                 <span className="text-text-on-paper-dim">WhatsApp</span>
                 <span className="text-amber font-mono font-semibold">38%</span>
               </div>
-              <Progress value={38} className="h-2 bg-amber/10 rounded-full" indicatorClassName="bg-amber" />
+              <Progress value={38} className="h-2 bg-amber/10 rounded-full [&>div]:bg-amber" />
             </div>
           </CardContent>
         </Card>

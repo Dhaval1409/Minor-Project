@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Aria — Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#12172B; --ink-soft:#232A45;
+    --paper:#F7F5EF; --card:#FFFFFF; --paper-dim:#EFEBDF;
+    --amber:#D98E2B; --amber-soft:#F6E3C2;
+    --emerald:#1F8A70; --emerald-soft:#DCF0EA;
+    --red:#C24A3B; --red-soft:#F6DEDA;
+    --line:rgba(18,23,43,0.10);
+    --text:#181511; --text-dim:#66604F; --text-faint:#9A9382;
+    --on-ink:#F5F1E8; --on-ink-dim:#9BA0B8;
+    --display:'Space Grotesk',sans-serif; --body:'Inter',sans-serif; --mono:'IBM Plex Mono',monospace;
+    --r:14px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:var(--body);background:var(--paper);color:var(--text);}
+  .app{display:grid;grid-template-columns:250px 1fr;min-height:100vh;}
+
+  /* ---------- SIDEBAR ---------- */
+  .sidebar{background:var(--ink);color:var(--on-ink);padding:26px 18px;display:flex;flex-direction:column;position:sticky;top:0;height:100vh;}
+  .brand{display:flex;align-items:center;gap:10px;font-family:var(--display);font-weight:700;font-size:18px;padding:0 8px 26px;}
+  .brand .dot{width:9px;height:9px;border-radius:50%;background:var(--emerald);box-shadow:0 0 0 4px rgba(31,138,112,0.18);}
+  .nav-group{margin-bottom:22px;}
+  .nav-label{font-family:var(--mono);font-size:10px;letter-spacing:0.09em;text-transform:uppercase;color:var(--on-ink-dim);padding:0 10px;margin-bottom:8px;}
+  .nav-item{
+    display:flex;align-items:center;gap:11px;padding:10px 10px;border-radius:9px;
+    font-size:14px;font-weight:500;color:var(--on-ink-dim);cursor:pointer;margin-bottom:2px;
+  }
+  .nav-item .ic{width:18px;text-align:center;font-size:14.5px;}
+  .nav-item:hover{color:var(--on-ink);background:rgba(255,255,255,0.05);}
+  .nav-item.active{background:rgba(217,142,43,0.16);color:var(--amber-soft);}
+  .sidebar-foot{margin-top:auto;padding:14px 10px;border-top:1px solid rgba(255,255,255,0.08);}
+  .plan-pill{font-family:var(--mono);font-size:10.5px;color:var(--on-ink-dim);}
+  .plan-pill b{color:var(--amber-soft);}
+
+  /* ---------- MAIN ---------- */
+  .main{padding:26px 34px 60px;max-width:100%;overflow-x:hidden;}
+  .topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:28px;flex-wrap:wrap;gap:14px;}
+  .topbar h1{font-family:var(--display);font-size:24px;font-weight:700;}
+  .topbar .sub{font-size:13.5px;color:var(--text-dim);margin-top:3px;}
+  .topbar-right{display:flex;align-items:center;gap:14px;}
+  .range{
+    font-family:var(--mono);font-size:12.5px;background:var(--card);border:1px solid var(--line);
+    padding:8px 14px;border-radius:9px;color:var(--text-dim);
+  }
+  .status-chip{
+    display:flex;align-items:center;gap:7px;background:var(--emerald-soft);color:var(--emerald);
+    font-family:var(--mono);font-size:12px;font-weight:600;padding:8px 13px;border-radius:999px;
+  }
+  .status-chip .pulse{width:6px;height:6px;border-radius:50%;background:var(--emerald);animation:pulse 1.6s infinite;}
+  @keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.5;}}
+
+  .view{display:none;}
+  .view.active{display:block;}
+
+  /* ---------- CARDS / GRID ---------- */
+  .grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:22px;}
+  .grid2{display:grid;grid-template-columns:1.4fr 1fr;gap:16px;margin-bottom:22px;}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:20px;}
+  .stat-card .stat-label{font-size:12.5px;color:var(--text-dim);display:flex;justify-content:space-between;align-items:center;}
+  .stat-card .stat-num{font-family:var(--display);font-size:30px;font-weight:700;margin-top:8px;}
+  .stat-card .stat-delta{font-family:var(--mono);font-size:11.5px;margin-top:6px;color:var(--emerald);}
+  .stat-card .stat-delta.down{color:var(--red);}
+  .stat-icon{width:30px;height:30px;border-radius:8px;background:var(--paper-dim);display:flex;align-items:center;justify-content:center;font-size:14px;}
+
+  .card-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;}
+  .card-head h3{font-family:var(--display);font-size:15px;font-weight:600;}
+  .card-head .link{font-size:12.5px;color:var(--amber);font-weight:600;cursor:pointer;}
+
+  /* bar chart */
+  .bars{display:flex;align-items:flex-end;gap:10px;height:150px;}
+  .bar-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:8px;}
+  .bar{width:100%;border-radius:6px 6px 0 0;background:var(--amber-soft);position:relative;}
+  .bar.hi{background:var(--amber);}
+  .bar-day{font-family:var(--mono);font-size:10.5px;color:var(--text-faint);}
+
+  /* activity feed */
+  .feed-item{display:flex;gap:12px;padding:11px 0;border-bottom:1px solid var(--line);align-items:flex-start;}
+  .feed-item:last-child{border-bottom:none;}
+  .feed-dot{width:8px;height:8px;border-radius:50%;margin-top:5px;flex-shrink:0;}
+  .feed-text{font-size:13.5px;}
+  .feed-text b{font-weight:600;}
+  .feed-time{font-family:var(--mono);font-size:11px;color:var(--text-faint);margin-top:2px;}
+
+  /* ---------- TABLE ---------- */
+  table{width:100%;border-collapse:collapse;}
+  th{
+    text-align:left;font-family:var(--mono);font-size:10.5px;text-transform:uppercase;letter-spacing:0.06em;
+    color:var(--text-faint);padding:0 14px 10px;border-bottom:1px solid var(--line);font-weight:600;
+  }
+  td{padding:13px 14px;font-size:13.5px;border-bottom:1px solid var(--line);vertical-align:middle;}
+  tr:last-child td{border-bottom:none;}
+  .cell-main{font-weight:600;}
+  .cell-sub{font-size:12px;color:var(--text-dim);margin-top:2px;}
+  .badge{
+    display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:999px;
+    font-size:11.5px;font-weight:600;font-family:var(--mono);
+  }
+  .badge.ok{background:var(--emerald-soft);color:var(--emerald);}
+  .badge.warn{background:var(--amber-soft);color:#96650F;}
+  .badge.bad{background:var(--red-soft);color:var(--red);}
+  .badge.muted{background:var(--paper-dim);color:var(--text-dim);}
+  .avatar-sm{width:30px;height:30px;border-radius:50%;background:var(--paper-dim);display:flex;align-items:center;justify-content:center;font-family:var(--display);font-weight:700;font-size:12px;}
+  .row-flex{display:flex;align-items:center;gap:10px;}
+  .btn-sm{
+    font-family:var(--body);font-size:12px;font-weight:600;padding:7px 13px;border-radius:8px;
+    border:1px solid var(--line);background:var(--card);cursor:pointer;color:var(--text);
+  }
+  .btn-sm.primary{background:var(--ink);color:var(--on-ink);border:none;}
+  .toolbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;gap:12px;flex-wrap:wrap;}
+  .search{
+    font-family:var(--body);font-size:13px;padding:9px 14px;border-radius:9px;border:1px solid var(--line);
+    background:var(--card);min-width:220px;
+  }
+  .filter-pills{display:flex;gap:8px;}
+  .filter-pill{font-family:var(--mono);font-size:11.5px;padding:7px 12px;border-radius:999px;border:1px solid var(--line);background:var(--card);color:var(--text-dim);cursor:pointer;}
+  .filter-pill.active{background:var(--ink);color:var(--on-ink);border-color:var(--ink);}
+
+  /* ---------- REPORT CARDS ---------- */
+  .report-list{display:flex;flex-direction:column;gap:10px;}
+  .report-row{
+    display:flex;justify-content:space-between;align-items:center;background:var(--card);
+    border:1px solid var(--line);border-radius:12px;padding:16px 18px;
+  }
+  .report-meta{display:flex;gap:14px;align-items:center;}
+  .report-icon{width:38px;height:38px;border-radius:10px;background:var(--paper-dim);display:flex;align-items:center;justify-content:center;font-size:16px;}
+  .report-title{font-weight:600;font-size:14px;}
+  .report-sub{font-size:12px;color:var(--text-dim);}
+
+  /* ---------- SETTINGS ---------- */
+  .settings-row{display:flex;justify-content:space-between;align-items:center;padding:16px 0;border-bottom:1px solid var(--line);}
+  .settings-row:last-child{border-bottom:none;}
+  .settings-label{font-weight:600;font-size:14px;}
+  .settings-sub{font-size:12.5px;color:var(--text-dim);margin-top:2px;}
+  .toggle{width:42px;height:24px;border-radius:999px;background:var(--paper-dim);position:relative;cursor:pointer;flex-shrink:0;}
+  .toggle.on{background:var(--emerald);}
+  .toggle::after{content:'';position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:#fff;transition:left 0.2s;}
+  .toggle.on::after{left:21px;}
+  .lang-chip{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:999px;background:var(--paper-dim);font-size:12.5px;font-weight:600;margin-right:8px;}
+
+  /* ---------- BILLING ---------- */
+  .plan-banner{
+    background:var(--ink);color:var(--on-ink);border-radius:var(--r);padding:26px;
+    display:flex;justify-content:space-between;align-items:center;margin-bottom:22px;flex-wrap:wrap;gap:16px;
+  }
+  .plan-banner .ptitle{font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:0.08em;color:var(--on-ink-dim);}
+  .plan-banner .pname{font-family:var(--display);font-size:24px;font-weight:700;margin-top:6px;}
+  .plan-banner .pprice{font-family:var(--mono);font-size:13px;color:var(--amber-soft);margin-top:4px;}
+  .usage-bar{height:8px;border-radius:999px;background:var(--paper-dim);overflow:hidden;margin-top:8px;}
+  .usage-fill{height:100%;background:var(--amber);}
+
+  @media(max-width:1000px){
+    .app{grid-template-columns:1fr;}
+    .sidebar{position:relative;height:auto;flex-direction:row;flex-wrap:wrap;padding:16px;}
+    .grid4{grid-template-columns:repeat(2,1fr);}
+    .grid2{grid-template-columns:1fr;}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- ================= SIDEBAR ================= -->
+  <div class="sidebar">
+    <div class="brand"><span class="dot"></span>Aria</div>
+
+    <div class="nav-group">
+      <div class="nav-label">Overview</div>
+      <div class="nav-item active" data-view="overview"><span class="ic">◧</span>Dashboard</div>
+      <div class="nav-item" data-view="reports"><span class="ic">▤</span>Reports</div>
+    </div>
+
+    <div class="nav-group">
+      <div class="nav-label">Activity</div>
+      <div class="nav-item" data-view="calls"><span class="ic">☎</span>Calls</div>
+      <div class="nav-item" data-view="whatsapp"><span class="ic">💬</span>WhatsApp</div>
+      <div class="nav-item" data-view="appointments"><span class="ic">🗓</span>Appointments</div>
+      <div class="nav-item" data-view="orders"><span class="ic">🧾</span>Orders</div>
+      <div class="nav-item" data-view="leads"><span class="ic">🎯</span>Leads</div>
+    </div>
+
+    <div class="nav-group">
+      <div class="nav-label">Manage</div>
+      <div class="nav-item" data-view="settings"><span class="ic">⚙</span>Aria Settings</div>
+      <div class="nav-item" data-view="billing"><span class="ic">💳</span>Billing</div>
+    </div>
+
+    <div class="sidebar-foot">
+      <div class="plan-pill">Plan: <b>Growth</b> · ₹3,999/mo</div>
+    </div>
+  </div>
+
+  <!-- ================= MAIN ================= -->
+  <div class="main">
+
+    <!-- ============ OVERVIEW ============ -->
+    <div class="view active" id="view-overview">
+      <div class="topbar">
+        <div><h1>Good morning, Rina Salon</h1><div class="sub">Here's what Aria handled since you last checked.</div></div>
+        <div class="topbar-right">
+          <div class="range">Last 7 days ▾</div>
+          <div class="status-chip"><span class="pulse"></span>Aria is on duty</div>
+        </div>
+      </div>
+
+      <div class="grid4">
+        <div class="card stat-card">
+          <div class="stat-label">Calls answered <span class="stat-icon">☎</span></div>
+          <div class="stat-num">128</div>
+          <div class="stat-delta">↑ 18% vs last week</div>
+        </div>
+        <div class="card stat-card">
+          <div class="stat-label">Appointments booked <span class="stat-icon">🗓</span></div>
+          <div class="stat-num">54</div>
+          <div class="stat-delta">↑ 9% vs last week</div>
+        </div>
+        <div class="card stat-card">
+          <div class="stat-label">Orders taken <span class="stat-icon">🧾</span></div>
+          <div class="stat-num">31</div>
+          <div class="stat-delta down">↓ 4% vs last week</div>
+        </div>
+        <div class="card stat-card">
+          <div class="stat-label">Leads followed up <span class="stat-icon">🎯</span></div>
+          <div class="stat-num">19</div>
+          <div class="stat-delta">↑ 26% vs last week</div>
+        </div>
+      </div>
+
+      <div class="grid2">
+        <div class="card">
+          <div class="card-head"><h3>Conversations this week</h3><span class="link">View reports</span></div>
+          <div class="bars" id="barchart"></div>
+        </div>
+        <div class="card">
+          <div class="card-head"><h3>Live activity</h3></div>
+          <div id="activity-feed"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ REPORTS ============ -->
+    <div class="view" id="view-reports">
+      <div class="topbar">
+        <div><h1>Reports</h1><div class="sub">Daily, weekly and monthly summaries of everything Aria did.</div></div>
+        <div class="topbar-right"><button class="btn-sm primary">Download all (.csv)</button></div>
+      </div>
+
+      <div class="grid2" style="margin-bottom:26px;">
+        <div class="card">
+          <div class="card-head"><h3>Conversion trend — last 30 days</h3></div>
+          <svg viewBox="0 0 480 150" width="100%" height="150">
+            <polyline points="0,110 40,95 80,100 120,80 160,85 200,60 240,68 280,45 320,50 360,30 400,38 440,20 480,25"
+              fill="none" stroke="#D98E2B" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+            <polyline points="0,110 40,95 80,100 120,80 160,85 200,60 240,68 280,45 320,50 360,30 400,38 440,20 480,25 480,150 0,150"
+              fill="rgba(217,142,43,0.10)" stroke="none"/>
+          </svg>
+        </div>
+        <div class="card">
+          <div class="card-head"><h3>Where conversations happen</h3></div>
+          <div style="display:flex;flex-direction:column;gap:14px;margin-top:6px;">
+            <div>
+              <div class="row-flex" style="justify-content:space-between;font-size:13px;margin-bottom:6px;"><span>Voice calls</span><span class="cell-sub">62%</span></div>
+              <div class="usage-bar" style="background:var(--paper-dim);"><div class="usage-fill" style="width:62%;background:var(--emerald);"></div></div>
+            </div>
+            <div>
+              <div class="row-flex" style="justify-content:space-between;font-size:13px;margin-bottom:6px;"><span>WhatsApp</span><span class="cell-sub">38%</span></div>
+              <div class="usage-bar"><div class="usage-fill" style="width:38%;"></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><h3>Generated reports</h3></div>
+        <div class="report-list">
+          <div class="report-row">
+            <div class="report-meta"><div class="report-icon">📄</div><div><div class="report-title">Weekly Summary — 23 Jun to 29 Jun</div><div class="report-sub">128 calls · 54 bookings · 31 orders</div></div></div>
+            <button class="btn-sm">Download PDF</button>
+          </div>
+          <div class="report-row">
+            <div class="report-meta"><div class="report-icon">📄</div><div><div class="report-title">Weekly Summary — 16 Jun to 22 Jun</div><div class="report-sub">109 calls · 47 bookings · 28 orders</div></div></div>
+            <button class="btn-sm">Download PDF</button>
+          </div>
+          <div class="report-row">
+            <div class="report-meta"><div class="report-icon">📄</div><div><div class="report-title">Monthly Summary — May 2026</div><div class="report-sub">462 calls · 201 bookings · 118 orders</div></div></div>
+            <button class="btn-sm">Download PDF</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ CALLS ============ -->
+    <div class="view" id="view-calls">
+      <div class="topbar"><div><h1>Calls</h1><div class="sub">Every call Aria answered, with outcome and transcript.</div></div></div>
+      <div class="card">
+        <div class="toolbar">
+          <input class="search" placeholder="Search by caller name or number">
+          <div class="filter-pills">
+            <div class="filter-pill active">All</div>
+            <div class="filter-pill">Booked</div>
+            <div class="filter-pill">Missed</div>
+            <div class="filter-pill">Escalated</div>
+          </div>
+        </div>
+        <table>
+          <tr><th>Caller</th><th>Time</th><th>Duration</th><th>Language</th><th>Outcome</th><th></th></tr>
+          <tr><td><div class="row-flex"><div class="avatar-sm">P</div><div><div class="cell-main">Priya Nair</div><div class="cell-sub">+91 98xxxxx210</div></div></div></td><td>Today, 6:04pm</td><td>1m 42s</td><td>English</td><td><span class="badge ok">Booked</span></td><td><button class="btn-sm">Transcript</button></td></tr>
+          <tr><td><div class="row-flex"><div class="avatar-sm">R</div><div><div class="cell-main">Rahul Sharma</div><div class="cell-sub">+91 98xxxxx543</div></div></div></td><td>Today, 4:20pm</td><td>0m 58s</td><td>Hindi</td><td><span class="badge ok">Booked</span></td><td><button class="btn-sm">Transcript</button></td></tr>
+          <tr><td><div class="row-flex"><div class="avatar-sm">?</div><div><div class="cell-main">Unknown caller</div><div class="cell-sub">+91 97xxxxx881</div></div></div></td><td>Today, 2:11pm</td><td>0m 12s</td><td>—</td><td><span class="badge bad">Missed</span></td><td><button class="btn-sm">Call back</button></td></tr>
+          <tr><td><div class="row-flex"><div class="avatar-sm">S</div><div><div class="cell-main">Sneha Gupta</div><div class="cell-sub">+91 98xxxxx004</div></div></div></td><td>Today, 11:47am</td><td>2m 30s</td><td>Marathi</td><td><span class="badge warn">Escalated to you</span></td><td><button class="btn-sm">Transcript</button></td></tr>
+          <tr><td><div class="row-flex"><div class="avatar-sm">A</div><div><div class="cell-main">Arjun Mehta</div><div class="cell-sub">+91 98xxxxx712</div></div></div></td><td>Yesterday, 5:32pm</td><td>1m 05s</td><td>English</td><td><span class="badge muted">Info only</span></td><td><button class="btn-sm">Transcript</button></td></tr>
+        </table>
+      </div>
+    </div>
+
+    <!-- ============ WHATSAPP ============ -->
+    <div class="view" id="view-whatsapp">
+      <div class="topbar"><div><h1>WhatsApp</h1><div class="sub">Conversations Aria handled on your business number.</div></div></div>
+      <div class="card">
+        <div class="toolbar">
+          <input class="search" placeholder="Search conversations">
+          <div class="filter-pills">
+            <div class="filter-pill active">All</div>
+            <div class="filter-pill">Needs reply</div>
+            <div class="filter-pill">Resolved</div>
+          </div>
+        </div>
+        <table>
+          <tr><th>Customer</th><th>Last message</th><th>Time</th><th>Status</th><th></th></tr>
+          <tr><td><div class="row-flex"><div class="avatar-sm">K</div><div class="cell-main">Kiran Rao</div></div></td><td class="cell-sub">"Yes, hold it! I'll pick up by 6."</td><td>4m ago</td><td><span class="badge ok">Resolved</span></td><td><button class="btn-sm">Open chat</button></td></tr>
+          <tr><td><div class="row-flex"><div class="avatar-sm">J</div><div class="cell-main">John Doe</div></div></td><td class="cell-sub">"Can I get a discount on bulk order?"</td><td>22m ago</td><td><span class="badge warn">Needs you</span></td><td><button class="btn-sm">Open chat</button></td></tr>
+          <tr><td><div class="row-flex"><div class="avatar-sm">N</div><div class="cell-main">Neha Patil</div></div></td><td class="cell-sub">"Perfect, see you at 5pm."</td><td>1h ago</td><td><span class="badge ok">Resolved</span></td><td><button class="btn-sm">Open chat</button></td></tr>
+        </table>
+      </div>
+    </div>
+
+    <!-- ============ APPOINTMENTS ============ -->
+    <div class="view" id="view-appointments">
+      <div class="topbar"><div><h1>Appointments</h1><div class="sub">Everything on today's calendar.</div></div><div class="topbar-right"><button class="btn-sm primary">+ Add manually</button></div></div>
+      <div class="card">
+        <table>
+          <tr><th>Time</th><th>Customer</th><th>Service</th><th>Booked via</th><th>Status</th></tr>
+          <tr><td class="cell-main">10:00 AM</td><td>Priya Nair</td><td>Hair spa</td><td><span class="badge muted">☎ Call</span></td><td><span class="badge ok">Confirmed</span></td></tr>
+          <tr><td class="cell-main">11:30 AM</td><td>Arjun Mehta</td><td>Haircut</td><td><span class="badge muted">💬 WhatsApp</span></td><td><span class="badge ok">Confirmed</span></td></tr>
+          <tr><td class="cell-main">2:00 PM</td><td>Sneha Gupta</td><td>Facial</td><td><span class="badge muted">☎ Call</span></td><td><span class="badge warn">Pending confirmation</span></td></tr>
+          <tr><td class="cell-main">4:30 PM</td><td>Rahul Sharma</td><td>Beard trim</td><td><span class="badge muted">☎ Call</span></td><td><span class="badge ok">Confirmed</span></td></tr>
+          <tr><td class="cell-main">6:15 PM</td><td>Kiran Rao</td><td>Hair color</td><td><span class="badge muted">💬 WhatsApp</span></td><td><span class="badge ok">Confirmed</span></td></tr>
+        </table>
+      </div>
+    </div>
+
+    <!-- ============ ORDERS ============ -->
+    <div class="view" id="view-orders">
+      <div class="topbar"><div><h1>Orders</h1><div class="sub">Orders taken by Aria across calls and WhatsApp.</div></div></div>
+      <div class="card">
+        <table>
+          <tr><th>Order</th><th>Customer</th><th>Items</th><th>Amount</th><th>Status</th></tr>
+          <tr><td class="cell-main">#1042</td><td>Neha Patil</td><td>Blue kurta (M) × 1</td><td>₹1,299</td><td><span class="badge ok">Confirmed</span></td></tr>
+          <tr><td class="cell-main">#1041</td><td>Sundar Traders</td><td>Rice 25kg × 2</td><td>₹3,400</td><td><span class="badge ok">Confirmed</span></td></tr>
+          <tr><td class="cell-main">#1040</td><td>Meera Iyer</td><td>Face wash × 3</td><td>₹840</td><td><span class="badge warn">Payment pending</span></td></tr>
+          <tr><td class="cell-main">#1039</td><td>Rohit Shah</td><td>Formal shirt (L) × 2</td><td>₹2,198</td><td><span class="badge ok">Confirmed</span></td></tr>
+        </table>
+      </div>
+    </div>
+
+    <!-- ============ LEADS ============ -->
+    <div class="view" id="view-leads">
+      <div class="topbar"><div><h1>Leads</h1><div class="sub">Enquiries that haven't converted yet — Aria is following up.</div></div></div>
+      <div class="card">
+        <table>
+          <tr><th>Name</th><th>Enquired about</th><th>Source</th><th>Next follow-up</th><th>Status</th></tr>
+          <tr><td class="cell-main">Vikram Joshi</td><td>Bridal package</td><td>☎ Missed call</td><td>Tomorrow, 11am</td><td><span class="badge warn">Follow-up scheduled</span></td></tr>
+          <tr><td class="cell-main">Anita Desai</td><td>Bulk stationery order</td><td>💬 WhatsApp</td><td>Today, 5pm</td><td><span class="badge warn">Follow-up scheduled</span></td></tr>
+          <tr><td class="cell-main">Farhan Ali</td><td>Gym membership</td><td>☎ Call</td><td>—</td><td><span class="badge bad">No response, 3 tries</span></td></tr>
+          <tr><td class="cell-main">Pooja Nair</td><td>Facial package</td><td>💬 WhatsApp</td><td>—</td><td><span class="badge ok">Converted</span></td></tr>
+        </table>
+      </div>
+    </div>
+
+    <!-- ============ SETTINGS ============ -->
+    <div class="view" id="view-settings">
+      <div class="topbar"><div><h1>Aria Settings</h1><div class="sub">How Aria represents your business.</div></div></div>
+      <div class="grid2">
+        <div class="card">
+          <div class="card-head"><h3>Business profile</h3></div>
+          <div class="settings-row"><div><div class="settings-label">Business name</div><div class="settings-sub">Rina Salon</div></div><button class="btn-sm">Edit</button></div>
+          <div class="settings-row"><div><div class="settings-label">Business number</div><div class="settings-sub">+91 98xxx xxxxx</div></div><button class="btn-sm">Edit</button></div>
+          <div class="settings-row"><div><div class="settings-label">Business hours</div><div class="settings-sub">10:00 AM – 8:00 PM, Mon–Sat</div></div><button class="btn-sm">Edit</button></div>
+          <div class="settings-row"><div><div class="settings-label">Connected calendar</div><div class="settings-sub">Google Calendar — connected</div></div><button class="btn-sm">Change</button></div>
+        </div>
+        <div class="card">
+          <div class="card-head"><h3>Aria's behaviour</h3></div>
+          <div class="settings-row"><div><div class="settings-label">Answer calls</div><div class="settings-sub">Pick up automatically 24×7</div></div><div class="toggle on"></div></div>
+          <div class="settings-row"><div><div class="settings-label">Reply on WhatsApp</div><div class="settings-sub">Auto-reply to new messages</div></div><div class="toggle on"></div></div>
+          <div class="settings-row"><div><div class="settings-label">Send appointment reminders</div><div class="settings-sub">2 hours before each booking</div></div><div class="toggle on"></div></div>
+          <div class="settings-row"><div><div class="settings-label">Auto follow-up on missed leads</div><div class="settings-sub">After 24 hours of no reply</div></div><div class="toggle"></div></div>
+          <div class="settings-row"><div style="width:100%;"><div class="settings-label" style="margin-bottom:10px;">Languages</div><span class="lang-chip">English ✓</span><span class="lang-chip">Hindi ✓</span><span class="lang-chip">Marathi ✓</span></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ BILLING ============ -->
+    <div class="view" id="view-billing">
+      <div class="topbar"><div><h1>Billing</h1><div class="sub">Your plan, usage and invoices.</div></div></div>
+      <div class="plan-banner">
+        <div><div class="ptitle">Current plan</div><div class="pname">Growth</div><div class="pprice">₹3,999 / month · renews 1 Aug 2026</div></div>
+        <button class="btn-sm" style="background:var(--amber-soft);color:#7A4E10;border:none;">Upgrade to Pro</button>
+      </div>
+      <div class="grid2">
+        <div class="card">
+          <div class="card-head"><h3>Usage this cycle</h3></div>
+          <div style="margin-bottom:16px;">
+            <div class="row-flex" style="justify-content:space-between;font-size:13px;margin-bottom:6px;"><span>Conversations</span><span class="cell-sub">612 / 1,500</span></div>
+            <div class="usage-bar"><div class="usage-fill" style="width:41%;"></div></div>
+          </div>
+          <div>
+            <div class="row-flex" style="justify-content:space-between;font-size:13px;margin-bottom:6px;"><span>Voice minutes</span><span class="cell-sub">340 / 800 min</span></div>
+            <div class="usage-bar"><div class="usage-fill" style="width:42%;background:var(--emerald);"></div></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-head"><h3>Invoices</h3></div>
+          <div class="report-list">
+            <div class="report-row"><div class="report-meta"><div class="report-icon">🧾</div><div><div class="report-title">July 2026</div><div class="report-sub">₹3,999 · Paid</div></div></div><button class="btn-sm">Download</button></div>
+            <div class="report-row"><div class="report-meta"><div class="report-icon">🧾</div><div><div class="report-title">June 2026</div><div class="report-sub">₹3,999 · Paid</div></div></div><button class="btn-sm">Download</button></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  // Navigation
+  document.querySelectorAll('.nav-item').forEach(item=>{
+    item.addEventListener('click',()=>{
+      document.querySelectorAll('.nav-item').forEach(i=>i.classList.remove('active'));
+      document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+      item.classList.add('active');
+      document.getElementById('view-'+item.dataset.view).classList.add('active');
+    });
+  });
+
+  // Bar chart
+  const days = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  const vals = [42,55,38,61,70,48,66];
+  const max = Math.max(...vals);
+  const barchart = document.getElementById('barchart');
+  days.forEach((d,i)=>{
+    const col = document.createElement('div'); col.className='bar-col';
+    const bar = document.createElement('div'); bar.className='bar'+(vals[i]===max?' hi':'');
+    bar.style.height = (vals[i]/max*120)+'px';
+    const label = document.createElement('div'); label.className='bar-day'; label.textContent=d;
+    col.appendChild(bar); col.appendChild(label);
+    barchart.appendChild(col);
+  });
+
+  // Activity feed
+  const activities = [
+    {c:'var(--emerald)', t:'<b>Priya Nair</b> booked hair spa for 6:15pm', time:'2m ago'},
+    {c:'var(--amber)', t:'Order <b>#1042</b> confirmed with Neha', time:'11m ago'},
+    {c:'var(--emerald)', t:'Reminder sent for tomorrow\\'s 5 appointments', time:'28m ago'},
+    {c:'#C24A3B', t:'Missed call from <b>+91 97xxxxx881</b>', time:'1h ago'},
+    {c:'var(--emerald)', t:'<b>Vikram Joshi</b> follow-up scheduled', time:'2h ago'}
+  ];
+  const feed = document.getElementById('activity-feed');
+  activities.forEach(a=>{
+    const row = document.createElement('div'); row.className='feed-item';
+    row.innerHTML = `<div class="feed-dot" style="background:${a.c};"></div><div><div class="feed-text">${a.t}</div><div class="feed-time">${a.time}</div></div>`;
+    feed.appendChild(row);
+  });
+</script>
+</body>
+</html>

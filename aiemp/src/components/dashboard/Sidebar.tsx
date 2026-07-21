@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { Sheet, SheetContent } from '@/components/ui/sheet';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
 import { Menu, LayoutDashboard, FileText, Phone, MessageCircle, Calendar, ShoppingBag, Target, Settings, CreditCard } from 'lucide-react';
@@ -106,18 +106,18 @@ export function Sidebar({ view, setView }: SidebarProps) {
   return (
     <>
       {/* Mobile Floating Drawer Navigation Container */}
+      <div className="lg:hidden fixed top-4 left-4 z-50">
+        <Button 
+          variant="ghost" 
+          size="icon" 
+          className="h-10 w-10 border border-ink/10 bg-paper text-ink hover:bg-ink/5 shadow-sm rounded-[10px]"
+          onClick={() => setOpen(true)}
+        >
+          <Menu className="h-5 w-5" />
+        </Button>
+      </div>
+
       <Sheet open={open} onOpenChange={setOpen}>
-        <SheetTrigger asChild>
-          <div className="lg:hidden fixed top-4 left-4 z-50">
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              className="h-10 w-10 border border-ink/10 bg-paper text-ink hover:bg-ink/5 shadow-sm rounded-[10px]"
-            >
-              <Menu className="h-5 w-5" />
-            </Button>
-          </div>
-        </SheetTrigger>
         <SheetContent side="left" className="p-0 w-72 bg-paper-dim border-r border-ink/10">
           <SidebarContent />
         </SheetContent>

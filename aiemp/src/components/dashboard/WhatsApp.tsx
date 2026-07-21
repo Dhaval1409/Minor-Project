@@ -69,7 +69,14 @@ export function WhatsApp() {
                   <TableCell className="text-muted-foreground italic">{conv.message}</TableCell>
                   <TableCell>{conv.time}</TableCell>
                   <TableCell>
-                    <Badge variant={conv.status === 'Resolved' ? 'default' : 'warning'}>
+                    <Badge 
+                      variant={conv.status === 'Resolved' ? 'default' : 'secondary'}
+                      className={
+                        conv.status !== 'Resolved'
+                          ? 'bg-amber-500 text-white hover:bg-amber-600 dark:bg-amber-600 dark:hover:bg-amber-700 border-transparent'
+                          : ''
+                      }
+                    >
                       {conv.status}
                     </Badge>
                   </TableCell>

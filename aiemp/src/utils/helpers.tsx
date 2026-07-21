@@ -75,21 +75,31 @@ export function buildActivityFeed(appointments: Appointment[]): ActivityItem[] {
   });
 }
 
-// FIXED: Returns JSX instead of an object
+// FIXED: Properly typed variants and swapped "warning" out for custom secondary styling
 export function statusBadge(status: string) {
-  const variants: Record<string, { variant: 'default' | 'destructive' | 'warning' | 'secondary', label: string }> = {
+  const variants: Record<
+    string, 
+    { variant: 'default' | 'destructive' | 'secondary'; label: string; className?: string }
+  > = {
     confirmed: { variant: 'default', label: 'Confirmed' },
     completed: { variant: 'default', label: 'Completed' },
     cancelled: { variant: 'destructive', label: 'Cancelled' },
-    rescheduled: { variant: 'warning', label: 'Rescheduled' },
-    pending: { variant: 'warning', label: 'Pending' },
+    rescheduled: { 
+      variant: 'secondary', 
+      label: 'Rescheduled', 
+      className: 'bg-amber-500 text-white hover:bg-amber-600 dark:bg-amber-600 dark:hover:bg-amber-700 border-transparent' 
+    },
+    pending: { 
+      variant: 'secondary', 
+      label: 'Pending', 
+      className: 'bg-amber-500 text-white hover:bg-amber-600 dark:bg-amber-600 dark:hover:bg-amber-700 border-transparent' 
+    },
   };
   
   const config = variants[status] || variants.pending;
   
-  // Return JSX directly
   return (
-    <Badge variant={config.variant}>
+    <Badge variant={config.variant} className={config.className}>
       {config.label}
     </Badge>
   );

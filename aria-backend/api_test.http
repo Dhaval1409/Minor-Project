@@ -1,52 +1,13 @@
-### Variables
-@baseUrl = http://localhost:5000
-
-### 1. Health Check
-GET {{baseUrl}}/health
-
-###
-
-### 2. Get All Appointments (Initially Empty)
-GET {{baseUrl}}/appointments
-
-###
-
-### 3. Book a Valid Appointment
-# @name createAppointment
-POST {{baseUrl}}/appointments
+### Test Business Registration Backend Endpoint
+POST http://localhost:5000/appointments/business/register HTTP/1.1
 Content-Type: application/json
 
 {
-  "name": "Jane Doe",
-  "phone": "+1234567890",
-  "businessType": "hair_salon",
-  "service": "Haircut",
-  "date": "2026-07-10",
-  "time": "17:00"
+  "name": "Test Frontend Shop",
+  "businessType": "salon_spa",
+  "city": "Mehsana",
+  "opens": "10:00 AM",
+  "closes": "09:00 PM",
+  "servicesProvided": "Haircut, Styling",
+  "telegramBotToken": "MOCK_TOKEN_123456"
 }
-
-###
-
-### 4. Extract ID and Fetch the Created Appointment
-# Note: Copy the id from the step 3 response and replace the ID below manually
-GET {{baseUrl}}/appointments/8ad9bcc0-08d2-4ac0-b41e-acf0a19a5564
-
-###
-
-### 5. Test Validation Error (Invalid Business Type)
-POST {{baseUrl}}/appointments
-Content-Type: application/json
-
-{
-  "name": "Jane",
-  "phone": "123",
-  "businessType": "spa",
-  "service": "Haircut",
-  "date": "2026-07-10",
-  "time": "17:00"
-}
-
-###
-
-### 6. Cancel / Delete an Appointment
-DELETE {{baseUrl}}/appointments/replace_with_actual_id_from_response

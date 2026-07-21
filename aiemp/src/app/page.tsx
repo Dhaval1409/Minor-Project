@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, type ReactNode } from 'react';
 
-function Reveal({ children }) {
+function Reveal({ children }: { children: ReactNode }) {
   const [isIn, setIsIn] = useState(false);
   const ref = useRef(null);
 
@@ -59,8 +59,8 @@ const faqs = [
 ];
 
 export default function Home() {
-  const [openFaq, setOpenFaq] = useState(null);
-  const toggleFaq = (i) => setOpenFaq(openFaq === i ? null : i);
+  const [openFaq, setOpenFaq] = useState<number | null>(null);
+  const toggleFaq = (i: number) => setOpenFaq(openFaq === i ? null : i);
 
   return (
     <div className="bg-paper font-body text-text-on-paper min-h-screen">
@@ -187,7 +187,7 @@ export default function Home() {
               <h2 className="font-display text-[28px] md:text-[40px] font-bold tracking-tight text-ink">
                 Everything a front-desk hire would do — minus the sick days.
               </h2>
-              <p className="mt-3.5 text-[16.5px] text-text-on-paper-dim">Aria's role is written into her onboarding, the same as any new employee.</p>
+              <p className="mt-3.5 text-[16.5px] text-text-on-paper-dim">Aria&apos;s role is written into her onboarding, the same as any new employee.</p>
             </div>
           </Reveal>
 

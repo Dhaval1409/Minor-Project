@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Appointment } from '../types';
+import { Appointment } from '@/types';
 import { statusBadge } from '@/utils/helpers';
 
 interface AppointmentsProps {
@@ -40,9 +40,7 @@ export function Appointments({ appointments, loadingAppts, apptError, onAdd, onC
           <p className="text-sm text-muted-foreground mt-1">Live from http://localhost:5000/appointments.</p>
         </div>
         <Dialog open={open} onOpenChange={setOpen}>
-          <DialogTrigger asChild>
-            <Button>+ Add manually</Button>
-          </DialogTrigger>
+      <DialogTrigger render={<Button>+ Add manually</Button>} />
           <DialogContent>
             <DialogHeader>
               <DialogTitle>New Appointment</DialogTitle>

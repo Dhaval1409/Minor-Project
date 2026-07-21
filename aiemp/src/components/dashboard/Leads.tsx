@@ -40,7 +40,7 @@ export function Leads() {
                   <TableCell>
                     <Badge variant={
                       lead.status === 'Converted' ? 'default' :
-                      lead.status === 'Scheduled' ? 'warning' : 'destructive'
+                      lead.status === 'Scheduled' ? 'secondary' : 'destructive'
                     }>
                       {lead.status}
                     </Badge>

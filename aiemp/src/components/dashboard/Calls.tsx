@@ -18,14 +18,23 @@ export function Calls() {
     { name: 'Arjun Mehta', phone: '+91 98xxxxx712', time: 'Yesterday, 5:32pm', duration: '1m 05s', lang: 'English', outcome: 'Info only' },
   ];
 
-  const getBadgeVariant = (outcome: string) => {
-    switch(outcome) {
-      case 'Booked': return 'default';
-      case 'Missed': return 'destructive';
-      case 'Escalated': return 'warning';
-      default: return 'secondary';
-    }
-  };
+const getBadgeVariant = (
+  outcome: string
+): "default" | "secondary" | "destructive" | "outline" => {
+  switch (outcome) {
+    case "Booked":
+      return "default";
+
+    case "Missed":
+      return "destructive";
+
+    case "Escalated":
+      return "secondary"; // changed from "warning"
+
+    default:
+      return "outline";
+  }
+};
 
   return (
     <div className="space-y-6">

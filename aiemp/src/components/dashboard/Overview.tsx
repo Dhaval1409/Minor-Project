@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Calendar, Phone, ShoppingBag, Target, TrendingUp, TrendingDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { Appointment, Business } from '../types';
+import { Appointment, Business } from '@/types';
 import { buildActivityFeed } from '@/utils/helpers';
 
 interface OverviewProps {
