@@ -97,18 +97,16 @@ export default function Onboarding() {
           closes: closes || '08:00 PM',
           servicesProvided: servicesProvided || 'General Services',
           telegramBotToken: telegramToken,
-          
-          // 🔴 FIXED: Exposing credentials directly at root level to satisfy backend routing validation
-          email: email, 
+          email: email,
           password: password,
           phone: mobile,
-          fullName: fullName, // Optional background fallback metadata
+          fullName: fullName,
 
           configuration: {
             jobsEnabled: selectedJobs,
             languagesSupported: selectedLangs,
-            integrations: connected
-          }
+            integrations: connected,
+          },
         }),
       });
 
@@ -118,7 +116,6 @@ export default function Onboarding() {
         throw new Error(data.message || 'Failed to initialize system registration backend profile.');
       }
 
-      // Persist all session parameters needed for instantaneous Dashboard authorization bypass
       if (data.businessId) {
         localStorage.setItem('aria_business_id', data.businessId);
       }
@@ -128,8 +125,7 @@ export default function Onboarding() {
       if (data.ownerId || data.userId) {
         localStorage.setItem('aria_user_id', data.ownerId || data.userId);
       }
-      
-      // Keep safety backup flags of the user state context for frontend dashboard components
+
       localStorage.setItem('aria_user_email', email);
       localStorage.setItem('aria_user_name', fullName);
 
@@ -155,8 +151,8 @@ export default function Onboarding() {
         
         {/* Top Header Branding */}
         <div className="mb-14 flex items-center justify-between">
-          <div className="flex items-center gap-2.5 font-display text-[20px] font-bold text-ink tracking-tight">
-            <span className="h-2.5 w-2.5 rounded-full bg-[#3ab795] animate-pulse" />
+          <div className="flex items-center gap-2.5 font-display text-[20px] font-bold tracking-tight text-ink">
+            <span className="h-2.5 w-2.5 animate-pulse rounded-full bg-[#3ab795]" />
             Aria
           </div>
           <div className="font-mono text-[11px] uppercase tracking-wider text-text-on-paper-dim opacity-70">
@@ -172,7 +168,7 @@ export default function Onboarding() {
 
         {/* ERROR BOX */}
         {errorMsg && (
-          <div className="mb-6 rounded-xl bg-rose-500/5 border border-rose-500/10 p-4 text-[13px] font-mono text-rose-700 animate-in fade-in duration-200">
+          <div className="mb-6 animate-in fade-in rounded-xl border border-rose-500/10 bg-rose-500/5 p-4 font-mono text-[13px] text-rose-700 duration-200">
             ⚠️ <strong>Launch Failed:</strong> {errorMsg}
           </div>
         )}
@@ -181,8 +177,8 @@ export default function Onboarding() {
         {current === 1 && (
           <div className="animate-in fade-in duration-300">
             <StepHead eyebrow="Step 1 of 7" title="Create your admin account" desc="This is how you'll log in to see Aria's live workspace reports and manage your AI configurations." />
-            <div className="rounded-2xl border border-ink/10 bg-white/40 backdrop-blur-md shadow-xl shadow-ink/5 p-7 relative overflow-hidden">
-              <div className="absolute top-0 left-0 right-0 h-[2px] bg-[#d9a05b]/40" />
+            <div className="relative overflow-hidden rounded-2xl border border-ink/10 bg-white/40 p-7 shadow-xl shadow-ink/5 backdrop-blur-md">
+              <div className="absolute left-0 right-0 top-0 h-[2px] bg-[#d9a05b]/40" />
               
               <div className="mb-5"><label className={labelClass}>Full name</label><input className={inputClass} type="text" placeholder="Rina Deshmukh" value={fullName} onChange={(e) => setFullName(e.target.value)} /></div>
               <div className="mb-5"><label className={labelClass}>Email address</label><input className={inputClass} type="email" placeholder="rina@rinasalon.in" value={email} onChange={(e) => setEmail(e.target.value)} /></div>
@@ -198,8 +194,8 @@ export default function Onboarding() {
         {current === 2 && (
           <div className="animate-in fade-in duration-300">
             <StepHead eyebrow="Step 2 of 7" title="Tell us about your shop" desc="Aria synthesizes this data to answer incoming buyer requests accurately without human supervision." />
-            <div className="rounded-2xl border border-ink/10 bg-white/40 backdrop-blur-md shadow-xl shadow-ink/5 p-7 relative overflow-hidden">
-              <div className="absolute top-0 left-0 right-0 h-[2px] bg-[#d9a05b]/40" />
+            <div className="relative overflow-hidden rounded-2xl border border-ink/10 bg-white/40 p-7 shadow-xl shadow-ink/5 backdrop-blur-md">
+              <div className="absolute left-0 right-0 top-0 h-[2px] bg-[#d9a05b]/40" />
 
               <div className="mb-5"><label className={labelClass}>Business name</label><input className={inputClass} type="text" placeholder="Rina Salon" value={businessName} onChange={(e) => setBusinessName(e.target.value)} /></div>
               <div className="mb-5 grid grid-cols-1 gap-5 sm:grid-cols-2">
@@ -237,14 +233,14 @@ export default function Onboarding() {
         {current === 3 && (
           <div className="animate-in fade-in duration-300">
             <StepHead eyebrow="Step 3 of 7" title="Deploy your individual AI employee" desc="Provision a clean Telegram bot interface. Aria targets customer chat routing directly into this pipeline." />
-            <div className="rounded-2xl border border-ink/10 bg-white/40 backdrop-blur-md shadow-xl shadow-ink/5 p-7 relative overflow-hidden">
-              <div className="absolute top-0 left-0 right-0 h-[2px] bg-[#d9a05b]/40" />
+            <div className="relative overflow-hidden rounded-2xl border border-ink/10 bg-white/40 p-7 shadow-xl shadow-ink/5 backdrop-blur-md">
+              <div className="absolute left-0 right-0 top-0 h-[2px] bg-[#d9a05b]/40" />
 
               <div className="mb-6 rounded-xl border border-[#d9a05b]/20 bg-[#d9a05b]/5 p-4 text-[13.5px] text-ink/90">
                 <p className="mb-1.5 font-bold text-[#d9a05b]">💡 Quick 1-Minute Provisioning:</p>
                 <ol className="list-inside list-decimal space-y-1.5 text-[13px] opacity-95">
                   <li>Open Telegram and ping <a href="https://t.me/BotFather" target="_blank" rel="noreferrer" className="font-semibold text-[#d9a05b] underline">@BotFather</a></li>
-                  <li>Execute the command <code className="bg-ink/5 px-1.5 py-0.5 rounded font-mono text-xs">/newbot</code> and assign an identifier.</li>
+                  <li>Execute the command <code className="rounded bg-ink/5 px-1.5 py-0.5 font-mono text-xs">/newbot</code> and assign an identifier.</li>
                   <li>Copy the secure <strong>HTTP API Token</strong> provided by the handler and input it below.</li>
                 </ol>
               </div>
@@ -270,15 +266,15 @@ export default function Onboarding() {
         {current === 4 && (
           <div className="animate-in fade-in duration-300">
             <StepHead eyebrow="Step 4 of 7" title="Connect WhatsApp Channel" desc="Synchronize Aria to handle queries directly through your active WhatsApp Business profile line." />
-            <div className="rounded-2xl border border-ink/10 bg-white/40 backdrop-blur-md shadow-xl shadow-ink/5 p-7 relative overflow-hidden">
-              <div className="absolute top-0 left-0 right-0 h-[2px] bg-[#d9a05b]/40" />
+            <div className="relative overflow-hidden rounded-2xl border border-ink/10 bg-white/40 p-7 shadow-xl shadow-ink/5 backdrop-blur-md">
+              <div className="absolute left-0 right-0 top-0 h-[2px] bg-[#d9a05b]/40" />
 
               <ConnectRow icon="💬" title="WhatsApp Business API" sub="Maps instantly onto your baseline workspace communication line" connected={connected.whatsapp} onConnect={() => connect('whatsapp')} />
               <ConnectRow icon="🖼" title="Brand assets & digital catalog catalogs" sub="Optional — provides customer media delivery hooks" connected={false} actionLabel="Upload" onConnect={() => {}} />
               
               <div className="mt-6 rounded-xl bg-ink p-5 text-paper shadow-sm">
                 <div className="mb-3 font-mono text-[10px] uppercase tracking-widest opacity-60">Real-time simulation layout</div>
-                <div className="rounded-lg bg-white/10 p-4 text-[13.5px] leading-relaxed border border-white/5">
+                <div className="rounded-lg border border-white/5 bg-white/10 p-4 text-[13.5px] leading-relaxed">
                   Hi! This is {businessName || 'Our Shop'} 👋 I'm Aria, I help with bookings and questions here. How can I help you today?
                 </div>
               </div>
@@ -290,8 +286,8 @@ export default function Onboarding() {
         {current === 5 && (
           <div className="animate-in fade-in duration-300">
             <StepHead eyebrow="Step 5 of 7" title="Set up what Aria can do" desc="Activate automation engines suited to your target workload. Configuration changes hot-reload instantly." />
-            <div className="rounded-2xl border border-ink/10 bg-white/40 backdrop-blur-md shadow-xl shadow-ink/5 p-7 relative overflow-hidden">
-              <div className="absolute top-0 left-0 right-0 h-[2px] bg-[#d9a05b]/40" />
+            <div className="relative overflow-hidden rounded-2xl border border-ink/10 bg-white/40 p-7 shadow-xl shadow-ink/5 backdrop-blur-md">
+              <div className="absolute left-0 right-0 top-0 h-[2px] bg-[#d9a05b]/40" />
 
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 {jobOptions.map((job) => (
@@ -318,8 +314,8 @@ export default function Onboarding() {
         {current === 6 && (
           <div className="animate-in fade-in duration-300">
             <StepHead eyebrow="Step 6 of 7" title="Sync availability timelines" desc="Integrate your calendar framework so Aria references real-time vacant slots exclusively." />
-            <div className="rounded-2xl border border-ink/10 bg-white/40 backdrop-blur-md shadow-xl shadow-ink/5 p-7 relative overflow-hidden">
-              <div className="absolute top-0 left-0 right-0 h-[2px] bg-[#d9a05b]/40" />
+            <div className="relative overflow-hidden rounded-2xl border border-ink/10 bg-white/40 p-7 shadow-xl shadow-ink/5 backdrop-blur-md">
+              <div className="absolute left-0 right-0 top-0 h-[2px] bg-[#d9a05b]/40" />
 
               <ConnectRow icon="📅" title="Google Calendar Workspace" sub="Highly Recommended for active automation synchronization" connected={connected.calendar} onConnect={() => connect('calendar')} />
               <ConnectRow icon="🗂️" title="Static scheduling slot layout matrices" sub="Fallback framework if external matrix calendars are unavailable" connected={connected.slots} actionLabel="Set up" onConnect={() => connect('slots')} />
@@ -332,8 +328,8 @@ export default function Onboarding() {
         {current === 7 && (
           <div className="animate-in fade-in duration-300">
             <StepHead eyebrow="Step 7 of 7" title="Review workspace before deployment" desc="Audit your runtime settings below. Aria initiates real-time message answering as soon as synchronization triggers." />
-            <div className="rounded-2xl border border-ink/10 bg-white/40 backdrop-blur-md shadow-xl shadow-ink/5 p-7 relative overflow-hidden">
-              <div className="absolute top-0 left-0 right-0 h-[3px] bg-[#d9a05b]" />
+            <div className="relative overflow-hidden rounded-2xl border border-ink/10 bg-white/40 p-7 shadow-xl shadow-ink/5 backdrop-blur-md">
+              <div className="absolute left-0 right-0 top-0 h-[3px] bg-[#d9a05b]" />
 
               <SummaryRow k="Business Scope" v={`${businessName || 'Not Set'} · ${businessType} · ${city || 'Not Set'}`} onEdit={() => setCurrent(2)} />
               <SummaryRow k="Telegram Daemon" v={telegramToken ? `Active Token Cluster (${telegramToken.substring(0, 6)}...)` : 'Not linked'} onEdit={() => setCurrent(3)} />
@@ -348,15 +344,15 @@ export default function Onboarding() {
 
         {/* SUCCESS SPLASH SCREEN */}
         {current === 8 && (
-          <div className="animate-in scale-in-95 rounded-2xl border border-ink/10 bg-white/40 backdrop-blur-md p-12 text-center shadow-xl shadow-ink/5 duration-300 relative overflow-hidden">
-            <div className="absolute top-0 left-0 right-0 h-[4px] bg-[#3ab795]" />
-            <div className="mx-auto mb-6 flex h-[76px] w-[76px] items-center justify-center rounded-full bg-[#3ab795]/10 text-[32px] text-[#3ab795] animate-bounce">✓</div>
-            <h1 className="font-display text-[30px] font-bold text-ink tracking-tight">Aria is on duty.</h1>
-            <p className="mx-auto mt-3 max-w-[460px] text-[15px] text-text-on-paper-dim leading-relaxed">
+          <div className="relative animate-in scale-in-95 overflow-hidden rounded-2xl border border-ink/10 bg-white/40 p-12 text-center shadow-xl shadow-ink/5 backdrop-blur-md duration-300">
+            <div className="absolute left-0 right-0 top-0 h-[4px] bg-[#3ab795]" />
+            <div className="mx-auto mb-6 flex h-[76px] w-[76px] animate-bounce items-center justify-center rounded-full bg-[#3ab795]/10 text-[32px] text-[#3ab795]">✓</div>
+            <h1 className="font-display text-[30px] font-bold tracking-tight text-ink">Aria is on duty.</h1>
+            <p className="mx-auto mt-3 max-w-[460px] text-[15px] leading-relaxed text-text-on-paper-dim">
               Her background models are now processing messages for <strong>{businessName || 'your enterprise'}</strong>. Your account credentials have been linked for automatic sign-in access.
             </p>
             <button 
-              className="mt-8 rounded-full bg-ink px-8 py-4 text-[14.5px] font-semibold text-paper hover:bg-ink/90 transition-all duration-200 shadow-sm transform hover:-translate-y-0.5" 
+              className="mt-8 transform rounded-full bg-ink px-8 py-4 text-[14.5px] font-semibold text-paper shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:bg-ink/90" 
               onClick={() => router.push('/dashboard')}
             >
               Access Administration Console →
@@ -368,7 +364,7 @@ export default function Onboarding() {
         {current <= TOTAL_STEPS && (
           <div className="mt-8 flex items-center justify-between">
             <button 
-              className="text-[14px] font-bold uppercase tracking-wider text-text-on-paper-dim/85 hover:text-ink transition-colors duration-200 disabled:opacity-30" 
+              className="text-[14px] font-bold uppercase tracking-wider text-text-on-paper-dim/85 transition-colors duration-200 hover:text-ink disabled:opacity-30" 
               style={{ visibility: current === 1 ? 'hidden' : 'visible' }} 
               onClick={goBack} 
               disabled={loading}
@@ -376,11 +372,11 @@ export default function Onboarding() {
               ← Back
             </button>
             <button
-              className={`rounded-full px-8 py-4 text-[14.5px] font-semibold transition-all duration-300 transform hover:-translate-y-0.5 shadow-sm ${
+              className={`transform rounded-full px-8 py-4 text-[14.5px] font-semibold shadow-sm transition-all duration-300 hover:-translate-y-0.5 ${
                 current === TOTAL_STEPS 
-                  ? 'bg-[#d9a05b] hover:bg-[#c9904b] text-ink' 
-                  : 'bg-ink hover:bg-ink/90 text-paper'
-              } disabled:opacity-50 disabled:pointer-events-none`}
+                  ? 'bg-[#d9a05b] text-ink hover:bg-[#c9904b]' 
+                  : 'bg-ink text-paper hover:bg-ink/90'
+              } disabled:pointer-events-none disabled:opacity-50`}
               onClick={goNext}
               disabled={loading}
             >
@@ -406,8 +402,8 @@ function StepHead({ eyebrow, title, desc }: { eyebrow: string; title: string; de
 function SummaryRow({ k, v, onEdit, isLast }: { k: string; v: string; onEdit: () => void; isLast?: boolean }) {
   return (
     <div className={`flex items-center justify-between py-4 text-[13.5px] ${isLast ? '' : 'border-b border-dashed border-ink/15'}`}>
-      <span className="text-text-on-paper-dim font-medium">{k}</span>
-      <span className="font-semibold text-ink flex items-center gap-3">
+      <span className="font-medium text-text-on-paper-dim">{k}</span>
+      <span className="flex items-center gap-3 font-semibold text-ink">
         {v} 
         <button onClick={onEdit} className="text-[11px] font-bold uppercase tracking-wider text-[#d9a05b] hover:underline">
           Modify

@@ -20,33 +20,29 @@ dns.setDefaultResultOrder('ipv4first');
 const app = express();
 const PORT = process.env.PORT ? Number(process.env.PORT) : 5000;
 
-// 1. MUST BE FIRST: Global CORS Configuration to prevent preflight blocks
-const allowedOrigins = [
-  "http://localhost:3000",
-  "https://minor-project-fronted.vercel.app"
-];
-
+// 1. Permissive CORS Setup (Prevents preflight blocks across preview & production deployments)
 app.use(
   cors({
-    origin: (origin, callback) => {
-      // Allow requests with no origin (like mobile apps or curl) or allowed frontend URLs
-      if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        callback(null, true); // Fallback to allow during staging/preview deployments
-      }
-    },
+    origin: true, // Automatically mirrors the incoming origin (allows localhost & any vercel domain)
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
+    allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
     credentials: true,
   })
 );
+
+// Respond instantly to all HTTP OPTIONS preflight requests before touching DB
+app.options("*", cors());
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // 2. Serverless Middleware: Ensure DB is connected before processing operational API requests
 app.use(async (req: Request, res: Response, next: NextFunction) => {
+  // Skip DB connection check for preflight or root/health routes
+  if (req.method === "OPTIONS" || req.path === "/" || req.path === "/health") {
+    return next();
+  }
+
   try {
     await connectDB();
     next();
