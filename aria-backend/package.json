@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "description": "Aria - AI Appointment Booking Assistant (Backend). Express + TypeScript + LangChain + Telegram Bot.",
   "main": "dist/index.js",
+  "engines": {
+    "node": ">=20.0.0"
+  },
   "scripts": {
     "dev": "nodemon --watch src -e ts --exec ts-node src/index.ts",
     "build": "tsc -p tsconfig.json",

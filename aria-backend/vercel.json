@@ -1,11 +1,15 @@
 {
-  "name": "aria-backend",
-  "version": "1.0.0",
-  "scripts": { ... },
-  "dependencies": {
-    ...
-  },
-  "overrides": {
-    "@langchain/core": "^0.3.80"
-  }
+  "version": 2,
+  "builds": [
+    {
+      "src": "api/index.ts",
+      "use": "@vercel/node"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "api/index.ts"
+    }
+  ]
 }
