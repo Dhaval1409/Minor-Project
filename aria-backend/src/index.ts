@@ -20,12 +20,32 @@ dns.setDefaultResultOrder('ipv4first');
 const app = express();
 const PORT = process.env.PORT ? Number(process.env.PORT) : 5000;
 
-// Global middleware configurations
-app.use(cors());
+// 1. MUST BE FIRST: Global CORS Configuration to prevent preflight blocks
+const allowedOrigins = [
+  "http://localhost:3000",
+  "https://minor-project-fronted.vercel.app"
+];
+
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      // Allow requests with no origin (like mobile apps or curl) or allowed frontend URLs
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(null, true); // Fallback to allow during staging/preview deployments
+      }
+    },
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+    credentials: true,
+  })
+);
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Serverless Middleware: Ensure DB is connected before processing any incoming route
+// 2. Serverless Middleware: Ensure DB is connected before processing operational API requests
 app.use(async (req: Request, res: Response, next: NextFunction) => {
   try {
     await connectDB();
@@ -36,7 +56,7 @@ app.use(async (req: Request, res: Response, next: NextFunction) => {
   }
 });
 
-// Root Verification Endpoint (Fixes 404 on base URL)
+// Root Verification Endpoint
 app.get("/", (req: Request, res: Response) => {
   res.status(200).json({
     success: true,
