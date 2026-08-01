@@ -4,6 +4,7 @@ import cors from "cors";
 import { connectDB } from "../src/config/db";
 import appointmentRoutes from "../src/routes/appointmentRoutes";
 import businessRoutes from "../src/routes/businessRoutes";
+import authRoutes from "../src/routes/authRoutes";
 import { errorHandler, notFoundHandler } from "../src/middleware/errorHandler";
 
 const app = express();
@@ -22,6 +23,7 @@ app.get("/health", (req: Request, res: Response) => {
   res.status(200).json({ success: true, message: "Aria backend is live on Vercel serverless!" });
 });
 
+app.use("/auth", authRoutes);
 app.use("/appointments", appointmentRoutes);
 app.use("/business", businessRoutes);
 

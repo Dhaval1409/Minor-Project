@@ -31,6 +31,7 @@ const inputClass =
 const labelClass = 'mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-ink/70';
 
 export default function Onboarding() {
+  const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5000';
   const router = useRouter();
   const [current, setCurrent] = useState(1);
   const [loading, setLoading] = useState(false);
@@ -84,7 +85,7 @@ export default function Onboarding() {
     setErrorMsg('');
 
     try {
-      const response = await fetch('http://localhost:5000/appointments/business/register', {
+      const response = await fetch(`${API_BASE}/appointments/business/register`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

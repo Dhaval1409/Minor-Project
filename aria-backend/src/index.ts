@@ -11,6 +11,8 @@ import cors from "cors";
 import { connectDB } from "./config/db";
 import appointmentRoutes from "./routes/appointmentRoutes";
 import businessRoutes from "./routes/businessRoutes";
+import authRoutes from "./routes/authRoutes";
+import adminRoutes from "./routes/adminRoutes"; // <-- ADDED: Import admin routes
 import { errorHandler, notFoundHandler } from "./middleware/errorHandler";
 import { initializeAllSaaS_Bots } from "./config/botManager";
 
@@ -60,7 +62,8 @@ app.get("/", (req: Request, res: Response) => {
     endpoints: {
       health: "/health",
       appointments: "/appointments",
-      business: "/business"
+      business: "/business",
+      admin: "/admin" // <-- ADDED: Reference in root endpoint
     }
   });
 });
@@ -71,8 +74,10 @@ app.get("/health", (req: Request, res: Response) => {
 });
 
 // REST API Router Mounts
+app.use("/auth", authRoutes);
 app.use("/appointments", appointmentRoutes); 
 app.use("/business", businessRoutes);       
+app.use("/admin", adminRoutes); // <-- ADDED: Mount the admin routes
 
 // Centralized System Error Interceptors
 app.use(notFoundHandler);

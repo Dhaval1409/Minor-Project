@@ -15,6 +15,7 @@ import { useDashboard } from '@/hooks/useDashboard';
 
 // --- MAIN GATEKEEPER WRAPPER ---
 export default function DashboardPage() {
+  const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5000';
   const [token, setToken] = useState<string | null>(null);
   const [authTab, setAuthTab] = useState<'login' | 'register'>('login');
   const [errorMsg, setErrorMsg] = useState('');
@@ -58,7 +59,7 @@ export default function DashboardPage() {
     setLoading(true);
 
     try {
-      const res = await fetch('http://localhost:5000/auth/login', {
+      const res = await fetch(`${API_BASE}/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(loginData)
@@ -97,7 +98,7 @@ export default function DashboardPage() {
     setLoading(true);
 
     try {
-      const res = await fetch('http://localhost:5000/auth/register', {
+      const res = await fetch(`${API_BASE}/auth/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(regData)
