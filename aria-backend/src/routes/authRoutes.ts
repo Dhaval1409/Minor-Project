@@ -13,7 +13,23 @@ const JWT_SECRET = process.env.JWT_SECRET || "fallback_secret_key";
 // REGISTER NEW TENANT
 router.post("/register", async (req: Request, res: Response): Promise<void> => {
   try {
-    const { name, email, password, businessType, city, telegramBotToken, phone } = req.body;
+    // FIX: previously this destructure dropped `hours`, `servicesProvided`,
+    // and `ownerName` entirely, so BusinessModel.create() below never
+    // received them — they silently fell back to schema defaults (empty
+    // array / default hours), even though the frontend was sending them
+    // correctly. Every field the frontend sends now gets pulled through.
+    const {
+      name,
+      ownerName,
+      email,
+      password,
+      businessType,
+      city,
+      hours,
+      servicesProvided,
+      telegramBotToken,
+      phone,
+    } = req.body;
 
     const existingBusiness = await BusinessModel.findOne({ email });
     if (existingBusiness) {
@@ -27,12 +43,15 @@ router.post("/register", async (req: Request, res: Response): Promise<void> => {
 
     const newBusiness = await BusinessModel.create({
       name,
+      ownerName: ownerName || '',
       email,
       password: hashedPassword,
       businessType,
-      city,
-      phone,
-      telegramBotToken
+      city: city || '',
+      hours: hours || { opens: '10:00 AM', closes: '08:00 PM' },
+      servicesProvided: Array.isArray(servicesProvided) ? servicesProvided : [],
+      phone: phone || '',
+      telegramBotToken,
     });
 
     if (telegramBotToken) {
@@ -44,7 +63,10 @@ router.post("/register", async (req: Request, res: Response): Promise<void> => {
     res.status(201).json({
       success: true,
       token,
-      business: { id: newBusiness._id, name: newBusiness.name, email: newBusiness.email }
+      // Return the full business object so the frontend's businessMeta
+      // fallback (and dashboard) has real data immediately, not just
+      // id/name/email.
+      business: newBusiness,
     });
   } catch (error: any) {
     res.status(500).json({ success: false, message: error.message });
@@ -73,7 +95,9 @@ router.post("/login", async (req: Request, res: Response): Promise<void> => {
     res.status(200).json({
       success: true,
       token,
-      business: { id: business._id, name: business.name, email: business.email }
+      // Same here — return the full business doc, not a trimmed subset,
+      // so the dashboard has hours/services/ownerName right after login too.
+      business,
     });
   } catch (error: any) {
     res.status(500).json({ success: false, message: error.message });

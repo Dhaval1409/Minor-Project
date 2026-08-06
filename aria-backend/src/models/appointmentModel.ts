@@ -4,6 +4,15 @@
  * Type definitions + Mongoose persistent database layer for appointments.
  * Refactored to use MongoDB via Mongoose, maintaining exact method signatures 
  * so that controllers do not break.
+ *
+ * ◄ CHANGED: appointments now support MULTIPLE services per booking.
+ *   Rule: each service = a fixed 30-minute slot, so durationMinutes = 30 * services.length
+ *   (1 service = 30 min, 2 = 60 min, 3 = 90 min, etc). This drives the
+ *   overlap/double-booking check in appointmentController.ts.
+ *
+ *   `service` (singular string) is kept as a derived, human-readable field
+ *   (e.g. "Haircut + Facial") purely so existing UI/Telegram-message code
+ *   that reads `appointment.service` keeps working without changes.
  */
 
 import { Schema, model, models, Document } from "mongoose";
@@ -28,6 +37,9 @@ export const APPOINTMENT_STATUSES: AppointmentStatus[] = [
   "rescheduled",
 ];
 
+// Fixed slot size in minutes. Every service booked adds one more slot.
+export const SLOT_MINUTES = 30;
+
 // ---------------------------------------------------------------------------
 // Interfaces
 // ---------------------------------------------------------------------------
@@ -46,7 +58,9 @@ export interface Appointment {
   name: string;
   phone: string;
   businessType: string; // Made generic string to handle flexible SaaS onboarding types
-  service: string;
+  services: string[]; // ◄ CHANGED: multiple services can be booked at once
+  service: string; // ◄ Legacy/derived display string, e.g. "Haircut + Facial"
+  durationMinutes: number; // ◄ ADDED: 30 * services.length
   date: string; // ISO date string, e.g. "2026-07-10"
   time: string; // e.g. "17:00"
   status: AppointmentStatus;
@@ -61,7 +75,8 @@ export interface BookingRequest {
   name: string;
   phone: string;
   businessType: string;
-  service: string;
+  services?: string[]; // ◄ CHANGED: preferred field going forward
+  service?: string;    // ◄ Still accepted for backward compatibility (single service)
   date: string;
   time: string;
 }
@@ -71,7 +86,9 @@ export interface UpdateAppointmentRequest {
   name?: string;
   phone?: string;
   businessType?: string;
+  services?: string[];
   service?: string;
+  durationMinutes?: number;
   date?: string;
   time?: string;
   status?: AppointmentStatus;
@@ -99,7 +116,9 @@ interface IAppointmentDoc extends Document {
   name: string;
   phone: string;
   businessType: string;
+  services: string[];
   service: string;
+  durationMinutes: number;
   date: string;
   time: string;
   status: AppointmentStatus;
@@ -115,10 +134,19 @@ const AppointmentSchema = new Schema<IAppointmentDoc>(
     name: { type: String, required: true, trim: true },
     phone: { type: String, required: true, trim: true },
     businessType: { type: String, required: true },
-    service: { type: String, required: true },
-    date: { type: String, required: true },
+    services: {
+      type: [String],
+      required: true,
+      validate: {
+        validator: (v: string[]) => Array.isArray(v) && v.length > 0,
+        message: "At least one service is required.",
+      },
+    },
+    service: { type: String, required: true }, // derived display string, kept in sync on write
+    durationMinutes: { type: Number, required: true, default: SLOT_MINUTES },
+    date: { type: String, required: true, index: true },
     time: { type: String, required: true },
-    status: { type: String, enum: APPOINTMENT_STATUSES, default: "pending" },
+    status: { type: String, enum: APPOINTMENT_STATUSES, default: "pending", index: true },
   },
   { 
     timestamps: true,
@@ -133,6 +161,10 @@ const AppointmentSchema = new Schema<IAppointmentDoc>(
     }
   }
 );
+
+// Compound index: overlap checks always filter by businessId + date, so this
+// keeps that query fast as appointment volume grows.
+AppointmentSchema.index({ businessId: 1, date: 1, status: 1 });
 
 // Check models cache to prevent HMR recompilation errors
 const MongooseAppointmentModel = 
@@ -156,8 +188,25 @@ function deHydrate(doc: any): Appointment {
   return doc.toJSON() as Appointment;
 }
 
+/** Normalizes either `services: string[]` or legacy `service: string` into a clean array. */
+function normalizeServices(data: { services?: string[]; service?: string }): string[] {
+  if (Array.isArray(data.services) && data.services.length > 0) {
+    return data.services.map((s) => s.trim()).filter(Boolean);
+  }
+  if (data.service && data.service.trim()) {
+    return [data.service.trim()];
+  }
+  return [];
+}
+
 export const AppointmentModel = {
   async create(data: BookingRequest): Promise<Appointment> {
+    const services = normalizeServices(data);
+
+    if (services.length === 0) {
+      throw new Error("At least one service is required to book an appointment.");
+    }
+
     const appointmentData = {
       id: uuidv4(),
       businessId: data.businessId ?? "",
@@ -165,7 +214,9 @@ export const AppointmentModel = {
       name: data.name,
       phone: data.phone,
       businessType: data.businessType,
-      service: data.service,
+      services,
+      service: services.join(" + "), // e.g. "Haircut + Facial" — legacy display field
+      durationMinutes: services.length * SLOT_MINUTES, // 30 / 60 / 90 / ...
       date: data.date,
       time: data.time,
       status: "pending" as AppointmentStatus,
@@ -190,13 +241,35 @@ export const AppointmentModel = {
     return docs.map(doc => deHydrate(doc));
   },
 
+  /**
+   * ◄ ADDED: fetches all non-cancelled appointments for a given business on a
+   * given day. Used by createAppointment's overlap check — this is the query
+   * that answers "is anything already booked in this business's calendar today".
+   */
+  async findByBusinessAndDate(businessId: string, date: string): Promise<Appointment[]> {
+    const docs = await MongooseAppointmentModel
+      .find({ businessId, date, status: { $ne: "cancelled" } })
+      .lean();
+    return docs.map(doc => deHydrate(doc));
+  },
+
   async update(
     id: string,
     changes: UpdateAppointmentRequest
   ): Promise<Appointment | undefined> {
+    // Keep `service` (display string) and `durationMinutes` in sync if the
+    // caller updates `services` directly (e.g. future reschedule-with-different-services flow).
+    const patch: Record<string, any> = { ...changes };
+    if (Array.isArray(changes.services) && changes.services.length > 0) {
+      const cleanServices = changes.services.map((s) => s.trim()).filter(Boolean);
+      patch.services = cleanServices;
+      patch.service = cleanServices.join(" + ");
+      patch.durationMinutes = cleanServices.length * SLOT_MINUTES;
+    }
+
     const doc = await MongooseAppointmentModel.findOneAndUpdate(
       { id },
-      { $set: changes },
+      { $set: patch },
       { new: true }
     );
     return doc ? deHydrate(doc) : undefined;

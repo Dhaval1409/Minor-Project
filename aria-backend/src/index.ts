@@ -75,8 +75,8 @@ app.get("/health", (req: Request, res: Response) => {
 
 // REST API Router Mounts
 app.use("/auth", authRoutes);
-app.use("/appointments", appointmentRoutes); 
-app.use("/business", businessRoutes);       
+app.use("/appointments", appointmentRoutes);
+app.use("/business", businessRoutes);
 app.use("/admin", adminRoutes); // <-- ADDED: Mount the admin routes
 
 // Centralized System Error Interceptors
@@ -87,7 +87,21 @@ app.use(errorHandler);
 if (process.env.NODE_ENV !== "production") {
   app.listen(PORT, async () => {
     console.log(`🚀 Aria SaaS backend listening on http://localhost:${PORT}`);
-    
+
+    // FIX: explicitly connect to MongoDB before touching any collections.
+    // Previously, initializeAllSaaS_Bots() ran here directly and called
+    // BusinessModel.find() without the DB ever being connected — the
+    // per-request middleware below is what normally triggers connectDB(),
+    // but bot startup happens outside the request/response cycle, so it
+    // never ran. That's what caused the 10s "buffering timed out" crash.
+    try {
+      await connectDB();
+      console.log("✅ MongoDB connected — proceeding to bot startup.");
+    } catch (dbError) {
+      console.error("❌ Failed to connect to MongoDB at startup. Bots will NOT be initialized:", dbError);
+      return; // Don't attempt bot startup against a dead connection
+    }
+
     try {
       await initializeAllSaaS_Bots();
       console.log("🤖 All active customer shop bots have been deployed successfully.");
