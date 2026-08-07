@@ -64,6 +64,16 @@ export default function Home() {
 
   return (
     <div className="bg-paper font-body text-text-on-paper min-h-screen">
+      {/* Hide the browser scrollbar visually while keeping the page scrollable */}
+      <style jsx global>{`
+        html {
+          scrollbar-width: none; /* Firefox */
+          -ms-overflow-style: none; /* IE/Edge legacy */
+        }
+        html::-webkit-scrollbar {
+          display: none; /* Chrome, Safari, Edge (Chromium) */
+        }
+      `}</style>
       {/* ---------- NAV ---------- */}
       <nav className="sticky top-0 z-50 bg-paper/85 backdrop-blur-md border-b border-ink/10">
         <div className="max-w-[1180px] mx-auto px-8 flex items-center justify-between h-[72px]">
@@ -85,73 +95,57 @@ export default function Home() {
         </div>
       </nav>
 
-      {/* ---------- HERO ---------- */}
-      <section className="py-22 md:py-[88px] pb-[100px] bg-[radial-gradient(600px_300px_at_85%_-10%,rgba(217,142,43,0.16),transparent_60%)] overflow-hidden">
-        <div className="max-w-[1180px] mx-auto px-8 grid grid-cols-1 lg:grid-cols-[1.05fr_0.95fr] gap-14 items-center">
-          <div>
-            <div className="font-mono text-[12.5px] tracking-[0.08em] uppercase text-emerald font-semibold flex items-center gap-2 mb-[22px] before:content-[''] before:w-1.5 before:h-1.5 before:bg-emerald before:rounded-full">
-              Now hiring — starts today
-            </div>
-            <h1 className="font-display font-bold text-[38px] md:text-[58px] leading-[1.04] tracking-tight text-ink">
-              Hire an AI<br />employee for<br />
-              <span className="text-amber">₹1,999/month.</span>
-            </h1>
-            <p className="mt-[22px] text-[18px] text-text-on-paper-dim max-w-[460px] leading-relaxed">
-              Aria answers your phone, replies on WhatsApp, books appointments, and follows up with every lead — while you run the shop.
-            </p>
-            <div className="flex flex-wrap gap-3.5 mt-[34px]">
-              <button className="bg-ink text-text-on-ink py-[15px] px-[26px] rounded-full font-semibold text-[15px] inline-flex items-center gap-2 hover:opacity-90 transition-opacity">
-                Hire Aria today →
-              </button>
-              <button className="bg-transparent text-ink border-[1.5px] border-ink/10 py-[15px] px-[26px] rounded-full font-semibold text-[15px] hover:bg-ink/5 transition-colors">
-                Hear a sample call
-              </button>
-            </div>
-            <div className="mt-[18px] text-[13px] text-text-on-paper-dim font-mono">
-              No hardware. No hiring hassle. Cancel anytime.
-            </div>
-          </div>
+      {/* ---------- HERO (video on desktop, static image on mobile — text overlaid on both) ---------- */}
+      <section className="relative overflow-hidden bg-ink">
+        <div className="relative w-full h-[520px] sm:h-[580px] md:h-auto md:aspect-[16/9] md:max-h-[86vh] md:min-h-[460px] flex items-center">
+          {/* Mobile / tablet — static image */}
+          <img
+            src="/aria.png"
+            alt="Aria, your AI employee"
+            className="block md:hidden absolute inset-0 w-full h-full object-cover object-[62%_26%]"
+          />
+          {/* Desktop — looping video */}
+          <video
+            className="hidden md:block absolute inset-0 w-full h-full object-cover object-[100%_20%]"
+            src="/aria.mp4"
+            poster="/aria-hero-poster.jpg"
+            autoPlay
+            muted
+            loop
+            playsInline
+          />
 
-          {/* ID Badge Widget */}
-          <div className="relative flex justify-center">
-            <div className="w-full max-w-[360px]">
-              <div className="bg-ink rounded-[20px] p-[26px] text-text-on-ink shadow-[0_30px_60px_-20px_rgba(18,23,43,0.45)] relative z-10">
-                <div className="flex justify-between items-start mb-5">
-                  <div className="font-mono text-[10.5px] tracking-wider uppercase text-text-on-ink-dim">Employee ID · AI-0417</div>
-                  <div className="flex items-center gap-1.5 font-mono text-[11px] text-emerald font-semibold">
-                    <span className="w-[7px] h-[7px] rounded-full bg-emerald animate-ping"></span>
-                    ON DUTY
-                  </div>
-                </div>
-                <div className="w-16 h-16 rounded-[16px] bg-gradient-to-br from-amber-soft to-amber flex items-center justify-center font-display font-bold text-2xl text-ink mb-4">
-                  A
-                </div>
-                <div className="font-display text-[22px] font-bold">Aria</div>
-                <div className="text-[13.5px] text-text-on-ink-dim mt-0.5">Front Desk &amp; Bookings</div>
-                <div className="h-px bg-line-dark my-[18px]"></div>
-                <div className="flex justify-between text-[12.5px] py-1.5 font-mono text-text-on-ink-dim"><span>DEPARTMENT</span><span className="font-sans font-semibold text-text-on-ink">Calls + WhatsApp</span></div>
-                <div className="flex justify-between text-[12.5px] py-1.5 font-mono text-text-on-ink-dim"><span>SHIFT</span><span className="font-sans font-semibold text-text-on-ink">24 × 7</span></div>
-                <div className="flex justify-between text-[12.5px] py-1.5 font-mono text-text-on-ink-dim"><span>LANGUAGES</span><span className="font-sans font-semibold text-text-on-ink">EN · HI · MR</span></div>
-                <div className="flex justify-between text-[12.5px] py-1.5 font-mono text-text-on-ink-dim"><span>REPORTS TO</span><span className="font-sans font-semibold text-text-on-ink">You</span></div>
+          {/* Strong scrim on the left where the copy sits, fading to clear on the
+              right where the character is. Mobile needs a heavier wash since the
+              text column takes up nearly the full width there. */}
+          <div className="absolute inset-0 bg-gradient-to-r from-ink via-ink/90 md:via-ink/70 to-ink/35 md:to-ink/15" />
+          {/* Gentle brand-color kiss, top right */}
+          <div className="absolute inset-0 bg-[radial-gradient(800px_420px_at_85%_-10%,rgba(217,142,43,0.18),transparent_60%)]" />
+          {/* Blends seamlessly into the dark stat strip that follows — no hard seam */}
+          <div className="absolute inset-x-0 bottom-0 h-24 md:h-40 bg-gradient-to-b from-transparent via-ink/75 to-ink" />
+
+          {/* Content */}
+          <div className="relative z-10 w-full pl-6 sm:pl-10 md:pl-24 lg:pl-32 pr-6 sm:pr-8">
+            <div className="max-w-[600px] mt-[40px] sm:mt-0">
+              <div className="font-mono text-[10.5px] sm:text-[12.5px] md:text-[14px] tracking-[0.08em] uppercase text-emerald font-semibold flex items-center gap-2 mb-[14px] sm:mb-[22px] before:content-[''] before:w-1.5 before:h-1.5 before:bg-emerald before:rounded-full">
+                Now hiring — starts today
               </div>
-
-              {/* Ticker Updates */}
-              <div className="max-w-[340px] mt-[-30px] ml-10 relative z-0 space-y-2.5">
-                <div className="bg-paper border border-ink/10 rounded-[12px] p-3 text-[12.5px] flex items-center gap-2.5 shadow-[0_12px_24px_-12px_rgba(18,23,43,0.18)]">
-                  <span className="w-2 h-2 rounded-full flex-shrink-0 bg-emerald"></span>
-                  <span><b className="font-semibold">Booked</b> 4:30pm haircut</span>
-                  <span className="text-text-on-paper-dim font-mono text-[11px] ml-auto whitespace-nowrap">just now</span>
-                </div>
-                <div className="bg-paper border border-ink/10 rounded-[12px] p-3 text-[12.5px] flex items-center gap-2.5 shadow-[0_12px_24px_-12px_rgba(18,23,43,0.18)]">
-                  <span className="w-2 h-2 rounded-full flex-shrink-0 bg-amber"></span>
-                  <span><b className="font-semibold">Order</b> confirmed #1042</span>
-                  <span className="text-text-on-paper-dim font-mono text-[11px] ml-auto whitespace-nowrap">2m ago</span>
-                </div>
-                <div className="bg-paper border border-ink/10 rounded-[12px] p-3 text-[12.5px] flex items-center gap-2.5 shadow-[0_12px_24px_-12px_rgba(18,23,43,0.18)]">
-                  <span className="w-2 h-2 rounded-full flex-shrink-0 bg-emerald"></span>
-                  <span><b className="font-semibold">Reminder</b> sent to 12 leads</span>
-                  <span className="text-text-on-paper-dim font-mono text-[11px] ml-auto whitespace-nowrap">6m ago</span>
-                </div>
+              <h1 className="font-display font-bold text-[26px] sm:text-[34px] md:text-[52px] lg:text-[60px] leading-[1.15] sm:leading-[1.05] tracking-tight text-text-on-ink drop-shadow-[0_2px_24px_rgba(0,0,0,0.55)]">
+                Hire an AI employee for <span className="text-amber">₹1,999/month.</span>
+              </h1>
+              <p className="mt-[10px] sm:mt-[18px] text-[11px] sm:text-[15px] md:text-[19px] text-text-on-ink-dim max-w-[480px] leading-relaxed">
+                Aria answers your phone, replies on WhatsApp, books appointments, and follows up with every lead — while you run the shop.
+              </p>
+              <div className="flex flex-wrap gap-2 sm:gap-3.5 mt-[14px] sm:mt-[26px]">
+                <button className="bg-amber text-ink py-[9px] px-[15px] sm:py-[15px] sm:px-[27px] rounded-full font-semibold text-[11.5px] sm:text-[15px] inline-flex items-center gap-1.5 hover:opacity-90 transition-opacity">
+                  Hire Aria today →
+                </button>
+                <button className="bg-white/8 text-text-on-ink border-[1.5px] border-white/25 py-[9px] px-[15px] sm:py-[15px] sm:px-[27px] rounded-full font-semibold text-[11.5px] sm:text-[15px] hover:bg-white/15 transition-colors backdrop-blur-md">
+                  Hear a sample call
+                </button>
+              </div>
+              <div className="mt-[9px] sm:mt-[15px] text-[9.5px] sm:text-[13px] text-text-on-ink-dim font-mono">
+                No hardware. No hiring hassle. Cancel anytime.
               </div>
             </div>
           </div>
@@ -462,6 +456,3 @@ export default function Home() {
     </div>
   );
 }
-
-
-
