@@ -1,30 +1,3 @@
-// import mongoose from "mongoose";
-// import dns from "dns";
-
-// export async function connectDB(): Promise<void> {
-//   try {
-//     // Override local DNS to prevent SRV lookups from getting blocked
-//     dns.setServers(["8.8.8.8", "8.8.4.4"]);
-
-//     const connStr = process.env.MONGO_URI || process.env.MONGODB_URI;
-
-//     if (!connStr) {
-//       throw new Error("MONGO_URI is missing from your .env file.");
-//     }
-
-//     const conn = await mongoose.connect(connStr, {
-//       serverSelectionTimeoutMS: 10000,
-//       family: 4, // Force IPv4
-//     });
-
-//     console.log(`🍃 MongoDB Connected successfully: ${conn.connection.host}`);
-//   } catch (error) {
-//     console.error("❌ MongoDB connection error:", error);
-//     process.exit(1);
-//   }
-// }
-
-
 /**
  * FILENAME: src/config/db.ts
  * Cached Mongoose Connection with DNS Override (Compatible with Local Dev & Vercel Serverless)
