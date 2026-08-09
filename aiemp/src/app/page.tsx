@@ -107,7 +107,8 @@ export default function Home() {
           {/* Desktop — looping video */}
           <video
             className="hidden md:block absolute inset-0 w-full h-full object-cover object-[100%_20%]"
-            src="/aria.mp4"
+            // src="/aria.mp4"
+           src="https://player.cloudinary.com/embed/?cloud_name=xbicmhte&public_id=aria"
             poster="/aria-hero-poster.jpg"
             autoPlay
             muted
