@@ -100,7 +100,8 @@ export default function Home() {
         <div className="relative w-full h-[520px] sm:h-[580px] md:h-auto md:aspect-[16/9] md:max-h-[86vh] md:min-h-[460px] flex items-center">
           {/* Mobile / tablet — static image */}
           <img
-            src="/aria.png"
+            // src="/aria.png"
+         src="https://res.cloudinary.com/xbicmhte/image/upload/v1786285653/aria.png"
             alt="Aria, your AI employee"
             className="block md:hidden absolute inset-0 w-full h-full object-cover object-[62%_26%]"
           />
