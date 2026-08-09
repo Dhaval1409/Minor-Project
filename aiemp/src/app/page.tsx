@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef, type ReactNode } from 'react';
+import { useRouter } from 'next/navigation';
 import Navbar from '@/components/Navbar';
 
 function Reveal({ children }: { children: ReactNode }) {
@@ -60,8 +61,11 @@ const faqs = [
 ];
 
 export default function Home() {
+  const router = useRouter();
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const toggleFaq = (i: number) => setOpenFaq(openFaq === i ? null : i);
+
+  const goToDashboard = () => router.push('/dashboard');
 
   return (
     <div className="bg-paper font-body text-text-on-paper min-h-screen">
@@ -121,7 +125,10 @@ export default function Home() {
                 Aria answers your phone, replies on WhatsApp, books appointments, and follows up with every lead — while you run the shop.
               </p>
               <div className="flex flex-wrap gap-2 sm:gap-3.5 mt-[14px] sm:mt-[26px]">
-                <button className="bg-amber text-ink py-[9px] px-[15px] sm:py-[15px] sm:px-[27px] rounded-full font-semibold text-[11.5px] sm:text-[15px] inline-flex items-center gap-1.5 hover:opacity-90 transition-opacity">
+                <button
+                  onClick={goToDashboard}
+                  className="bg-amber text-ink py-[9px] px-[15px] sm:py-[15px] sm:px-[27px] rounded-full font-semibold text-[11.5px] sm:text-[15px] inline-flex items-center gap-1.5 hover:opacity-90 transition-opacity"
+                >
                   Hire Aria today →
                 </button>
                 <button className="bg-white/8 text-text-on-ink border-[1.5px] border-white/25 py-[9px] px-[15px] sm:py-[15px] sm:px-[27px] rounded-full font-semibold text-[11.5px] sm:text-[15px] hover:bg-white/15 transition-colors backdrop-blur-md">
@@ -410,7 +417,10 @@ export default function Home() {
             Onboard Aria in under 15 minutes and stop missing calls today.
           </p>
           <div className="flex flex-wrap justify-center gap-3.5 mt-[34px]">
-            <button className="bg-amber text-ink py-[15px] px-[26px] rounded-full font-semibold text-[15px] hover:opacity-95 transition-opacity">
+            <button
+              onClick={goToDashboard}
+              className="bg-amber text-ink py-[15px] px-[26px] rounded-full font-semibold text-[15px] hover:opacity-95 transition-opacity"
+            >
               Hire Aria today →
             </button>
             <button className="bg-transparent text-text-on-ink border-[1.5px] border-line-dark py-[15px] px-[26px] rounded-full font-semibold text-[15px] hover:bg-white/5 transition-colors">

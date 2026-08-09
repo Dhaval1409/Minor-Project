@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 const NAV_LINKS = [
   { href: '/#responsibilities', label: 'What she does' },
@@ -14,6 +15,12 @@ const NAV_LINKS = [
 
 export default function Navbar() {
   const [open, setOpen] = useState(false);
+  const router = useRouter();
+
+  const goToDashboard = () => {
+    setOpen(false);
+    router.push('/dashboard');
+  };
 
   return (
     <nav className="sticky top-0 z-50 bg-paper/85 backdrop-blur-md border-b border-ink/10">
@@ -39,7 +46,10 @@ export default function Navbar() {
 
         <div className="flex items-center gap-3">
           {/* CTA — hidden on very small screens so it doesn't crowd the hamburger */}
-          <button className="hidden sm:inline-flex bg-ink text-text-on-ink px-5 py-2.5 rounded-full text-[14px] font-semibold hover:opacity-90 transition-opacity">
+          <button
+            onClick={goToDashboard}
+            className="hidden sm:inline-flex bg-ink text-text-on-ink px-5 py-2.5 rounded-full text-[14px] font-semibold hover:opacity-90 transition-opacity"
+          >
             Hire Aria
           </button>
 
@@ -88,7 +98,7 @@ export default function Navbar() {
             </a>
           ))}
           <button
-            onClick={() => setOpen(false)}
+            onClick={goToDashboard}
             className="mt-3 w-full bg-ink text-text-on-ink px-5 py-3 rounded-full text-[14px] font-semibold hover:opacity-90 transition-opacity"
           >
             Hire Aria
