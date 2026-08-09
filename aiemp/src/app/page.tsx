@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef, type ReactNode } from 'react';
+import Navbar from '@/components/Navbar';
 
 function Reveal({ children }: { children: ReactNode }) {
   const [isIn, setIsIn] = useState(false);
@@ -74,72 +75,29 @@ export default function Home() {
           display: none; /* Chrome, Safari, Edge (Chromium) */
         }
       `}</style>
+
       {/* ---------- NAV ---------- */}
-      <nav className="sticky top-0 z-50 bg-paper/85 backdrop-blur-md border-b border-ink/10">
-        <div className="max-w-[1180px] mx-auto px-8 flex items-center justify-between h-[72px]">
-          <div className="flex items-center gap-2.5 font-display font-bold text-[20px] tracking-tight">
-            <span className="w-2.5 h-2.5 rounded-full bg-emerald shadow-[0_0_0_4px_rgba(31,138,112,0.15)]"></span>
-            Aria
-          </div>
-          <div className="hidden md:flex gap-9 text-[14.5px] font-medium text-text-on-paper-dim">
-            <a href="#responsibilities" className="hover:text-ink transition-colors">What she does</a>
-            <a href="#channels" className="hover:text-ink transition-colors">Calls + WhatsApp</a>
-            <a href="#pricing" className="hover:text-ink transition-colors">Pricing</a>
-            <a href="#faq" className="hover:text-ink transition-colors">FAQ</a>
-            <a href="/onboarding" className="hover:text-ink transition-colors">setUp</a>
-            <a href="/dashboard" className="hover:text-ink transition-colors">Dashboard</a>
-          </div>
-          <button className="bg-ink text-text-on-ink px-5 py-2.5 rounded-full text-[14px] font-semibold hover:opacity-90 transition-opacity">
-            Hire Aria
-          </button>
-        </div>
-      </nav>
+      <Navbar />
 
       {/* ---------- HERO (video on desktop, static image on mobile — text overlaid on both) ---------- */}
       <section className="relative overflow-hidden bg-ink">
         <div className="relative w-full h-[520px] sm:h-[580px] md:h-auto md:aspect-[16/9] md:max-h-[86vh] md:min-h-[460px] flex items-center">
           {/* Mobile / tablet — static image */}
           <img
-            // src="/aria.png"
-         src="https://res.cloudinary.com/xbicmhte/image/upload/v1786285653/aria.png"
+            src="https://res.cloudinary.com/xbicmhte/image/upload/v1786285653/aria.png"
             alt="Aria, your AI employee"
             className="block md:hidden absolute inset-0 w-full h-full object-cover object-[62%_26%]"
           />
           {/* Desktop — looping video */}
-          {/* <video
+          <video
             className="hidden md:block absolute inset-0 w-full h-full object-cover object-[100%_20%]"
-            src="/aria.mp4"
-         
+            src="https://res.cloudinary.com/xbicmhte/video/upload/f_auto,q_auto/aria.mp4"
             poster="/aria-hero-poster.jpg"
             autoPlay
             muted
             loop
             playsInline
-          /> */}
-
-          {/* <iframe
-  className="hidden md:block absolute inset-0 w-full h-full"
-  src="https://player.cloudinary.com/embed/?cloud_name=xbicmhte&public_id=aria&player[autoplay]=true&player[muted]=true&player[loop]=true&player[controls]=false"
-  style={{
-    width: "100%",
-    height: "100%",
-    border: "none",
-  }}
-  allow="autoplay; fullscreen; encrypted-media; picture-in-picture"
-  allowFullScreen
-  title="Aria Video"
-/> */}
-
-
-<video
-  className="hidden md:block absolute inset-0 w-full h-full object-cover object-[100%_20%]"
-  src="https://res.cloudinary.com/xbicmhte/video/upload/f_auto,q_auto/aria.mp4"
-  poster="/aria-hero-poster.jpg"
-  autoPlay
-  muted
-  loop
-  playsInline
-/>
+          />
 
           {/* Strong scrim on the left where the copy sits, fading to clear on the
               right where the character is. Mobile needs a heavier wash since the
