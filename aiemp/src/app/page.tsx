@@ -105,16 +105,40 @@ export default function Home() {
             className="block md:hidden absolute inset-0 w-full h-full object-cover object-[62%_26%]"
           />
           {/* Desktop — looping video */}
-          <video
+          {/* <video
             className="hidden md:block absolute inset-0 w-full h-full object-cover object-[100%_20%]"
-            // src="/aria.mp4"
-           src="https://player.cloudinary.com/embed/?cloud_name=xbicmhte&public_id=aria"
+            src="/aria.mp4"
+         
             poster="/aria-hero-poster.jpg"
             autoPlay
             muted
             loop
             playsInline
-          />
+          /> */}
+
+          {/* <iframe
+  className="hidden md:block absolute inset-0 w-full h-full"
+  src="https://player.cloudinary.com/embed/?cloud_name=xbicmhte&public_id=aria&player[autoplay]=true&player[muted]=true&player[loop]=true&player[controls]=false"
+  style={{
+    width: "100%",
+    height: "100%",
+    border: "none",
+  }}
+  allow="autoplay; fullscreen; encrypted-media; picture-in-picture"
+  allowFullScreen
+  title="Aria Video"
+/> */}
+
+
+<video
+  className="hidden md:block absolute inset-0 w-full h-full object-cover object-[100%_20%]"
+  src="https://res.cloudinary.com/xbicmhte/video/upload/f_auto,q_auto/aria.mp4"
+  poster="/aria-hero-poster.jpg"
+  autoPlay
+  muted
+  loop
+  playsInline
+/>
 
           {/* Strong scrim on the left where the copy sits, fading to clear on the
               right where the character is. Mobile needs a heavier wash since the
