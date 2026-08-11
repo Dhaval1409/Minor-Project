@@ -181,14 +181,16 @@ export default function LoginPage() {
     <div className="relative min-h-screen bg-ink font-body text-text-on-paper flex flex-col selection:bg-[#d9a05b]/20 overflow-hidden">
       {/* Mobile / tablet — static image */}
       <img
-        src="https://res.cloudinary.com/xbicmhte/image/upload/v1786285653/aria.png"
+        // src="https://res.cloudinary.com/xbicmhte/image/upload/v1786285653/aria.png"
+        src="https://res.cloudinary.com/xbicmhte/image/upload/v1786450785/aria-robot.png"
         alt="Aria, your AI employee"
         className="block md:hidden absolute inset-0 w-full h-full object-cover object-[62%_26%]"
       />
       {/* Desktop — looping video */}
       <video
         className="hidden md:block absolute inset-0 w-full h-full object-cover object-[100%_20%]"
-        src="https://res.cloudinary.com/xbicmhte/video/upload/v1786268667/aria2.mp4"
+        // src="https://res.cloudinary.com/xbicmhte/video/upload/v1786268667/aria2.mp4"
+        src="https://res.cloudinary.com/xbicmhte/video/upload/v1786449810/aria-robot-2.mp4"
         poster="/aria-hero-poster.jpg"
         autoPlay
         muted
