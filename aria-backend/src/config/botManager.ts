@@ -1,12 +1,24 @@
 // /**
 //  * FILENAME: src/config/botManager.ts
 //  * DESCRIPTION: Handles automated provisioning and isolated stream handling for active shop bots.
+//  *
+//  * ◄ UPDATED: works with aiService's new memory + confirm-before-booking
+//  * flow. Two changes from before:
+//  *   1. Builds a stable `sessionId` (businessId + chatId) and passes it into
+//  *      processUserMessage() so the AI remembers the last few turns of this
+//  *      specific customer's conversation with this specific shop.
+//  *   2. Only writes an appointment to the database when
+//  *      aiResponse.confirmed === true — intent === "book" alone no longer
+//  *      means "save it," it just means "the AI understood the request and
+//  *      is now waiting for the customer to say yes."
 //  */
 // import TelegramBot from "node-telegram-bot-api";
 // import { BusinessModel } from "../models/businessModel";
 // import { AppointmentModel } from "../models/appointmentModel";
+// import { LeadModel } from "../models/leadModel";
 // import { processUserMessage } from "../services/aiService";
 // import { parseTimeToMinutes, computeDurationMinutes, hasBookingOverlap } from "../utils/slotGenerator";
+
 
 // const activeBots: Record<string, TelegramBot> = {};
 
@@ -48,6 +60,11 @@
 
 //       if (!text) return;
 
+//       // Scopes the conversation memory to THIS business + THIS customer,
+//       // so two different shops (or two different customers) never bleed
+//       // context into each other even if a chatId were ever reused.
+//       const sessionId = `${_id.toString()}:${chatId}`;
+
 //       let liveBusiness = business;
 //       try {
 //         const fresh = await BusinessModel.findById(_id);
@@ -65,17 +82,14 @@
 //       if (text.startsWith("/")) return;
 
 //       try {
-//         const aiResponse = await processUserMessage(text, liveBusiness);
-//         const missing = aiResponse.missingFields || [];
+//         const aiResponse = await processUserMessage(sessionId, text, liveBusiness);
 
-//         // 🎯 1. Booking Flow
-//         if (
-//           aiResponse.intent === "book" &&
-//           missing.length === 0 &&
-//           aiResponse.service &&
-//           aiResponse.date &&
-//           aiResponse.time
-//         ) {
+//         // 🎯 1. Booking Flow — ONLY fires once the customer has confirmed.
+//         // (aiResponse.intent === "book" now also fires on the FIRST message
+//         // where all fields are known — that turn is just the confirmation
+//         // question and confirmed will be false, so it falls through to the
+//         // "default conversation reply" branch below instead of booking.)
+//         if (aiResponse.intent === "book" && aiResponse.confirmed && aiResponse.service && aiResponse.date && aiResponse.time) {
 //           const customerName = msg.chat.first_name
 //             ? `${msg.chat.first_name} ${msg.chat.last_name || ""}`.trim()
 //             : "Customer";
@@ -92,6 +106,10 @@
 //             return;
 //           }
 
+//           // Re-check for overlap at confirmation time, not just when the
+//           // slot was first proposed — a few messages may have passed
+//           // (during the confirm exchange) in which someone else could have
+//           // booked the same slot.
 //           const sameDayAppointments = await AppointmentModel.findByBusinessAndDate(
 //             _id.toString(),
 //             aiResponse.date
@@ -100,7 +118,7 @@
 //           if (hasBookingOverlap(sameDayAppointments, newStart, newEnd)) {
 //             bot.sendMessage(
 //               chatId,
-//               `Sorry, that time slot on ${aiResponse.date} is already booked. 😕 Could you pick a different time? You can also ask me "what slots are free on ${aiResponse.date}" and I'll list them out for you.`
+//               `Sorry, that time slot on ${aiResponse.date} just got booked by someone else. 😕 Could you pick a different time? You can also ask me "what slots are free on ${aiResponse.date}" and I'll list them out for you.`
 //             );
 //             return;
 //           }
@@ -141,7 +159,9 @@
 //             );
 //           }
 
-//         // 🎯 3. Default AI Conversation Response
+//         // 🎯 3. Default AI Conversation Response — also covers the
+//         //    "booking proposed, waiting on confirmation" turn, since that
+//         //    response already carries the right confirm-or-not reply text.
 //         } else {
 //           bot.sendMessage(chatId, aiResponse.reply);
 //         }
@@ -197,12 +217,20 @@
  *      aiResponse.confirmed === true — intent === "book" alone no longer
  *      means "save it," it just means "the AI understood the request and
  *      is now waiting for the customer to say yes."
+ *
+ * ◄ UPDATED AGAIN: hooks lead capture into the chat flow.
+ *   - Every inbound message upserts/refreshes a lead record for that
+ *     customer, regardless of what the AI's intent turns out to be.
+ *   - When a booking actually completes, the matching lead is flipped to
+ *     "converted" so it drops out of any "needs follow-up" view.
  */
 import TelegramBot from "node-telegram-bot-api";
 import { BusinessModel } from "../models/businessModel";
 import { AppointmentModel } from "../models/appointmentModel";
+import { LeadModel } from "../models/leadModel";
 import { processUserMessage } from "../services/aiService";
 import { parseTimeToMinutes, computeDurationMinutes, hasBookingOverlap } from "../utils/slotGenerator";
+
 
 const activeBots: Record<string, TelegramBot> = {};
 
@@ -215,6 +243,38 @@ function isValidToken(token: string): boolean {
   }
 
   return token.includes(":");
+}
+
+// ◄ ADDED: fires on every inbound message so a lead record exists (and
+// stays fresh) for this customer, independent of whether they end up
+// booking, viewing appointments, or just chatting.
+//
+// ⚠️ This assumes LeadModel exposes an `upsert`-style method keyed on
+// businessId + userId. Adjust the method name/shape to match your actual
+// LeadModel if it differs.
+async function captureLeadFromMessage({
+  businessId,
+  chatId,
+  customerName,
+  aiResponse,
+}: {
+  businessId: string;
+  chatId: string;
+  customerName: string;
+  aiResponse: any;
+}) {
+  try {
+    await LeadModel.upsert({
+      businessId,
+      userId: chatId,
+      name: customerName,
+      service: aiResponse.service || undefined,
+      lastMessageIntent: aiResponse.intent,
+      status: "new",
+    });
+  } catch (err) {
+    console.error(`⚠️  [BotManager] Failed to capture lead for ${chatId}:`, err);
+  }
 }
 
 export function startIndividualShopBot(business: any) {
@@ -268,16 +328,25 @@ export function startIndividualShopBot(business: any) {
       try {
         const aiResponse = await processUserMessage(sessionId, text, liveBusiness);
 
+        const customerName = msg.chat.first_name
+          ? `${msg.chat.first_name} ${msg.chat.last_name || ""}`.trim()
+          : "Customer";
+
+        // ◄ ADDED: log/refresh this customer's lead on every message,
+        // regardless of what happens next in the flow below.
+        captureLeadFromMessage({
+          businessId: _id.toString(),
+          chatId,
+          customerName,
+          aiResponse,
+        });
+
         // 🎯 1. Booking Flow — ONLY fires once the customer has confirmed.
         // (aiResponse.intent === "book" now also fires on the FIRST message
         // where all fields are known — that turn is just the confirmation
         // question and confirmed will be false, so it falls through to the
         // "default conversation reply" branch below instead of booking.)
         if (aiResponse.intent === "book" && aiResponse.confirmed && aiResponse.service && aiResponse.date && aiResponse.time) {
-          const customerName = msg.chat.first_name
-            ? `${msg.chat.first_name} ${msg.chat.last_name || ""}`.trim()
-            : "Customer";
-
           const durationMinutes = computeDurationMinutes([aiResponse.service]);
           const newStart = parseTimeToMinutes(aiResponse.time);
           const newEnd = newStart + durationMinutes;
@@ -316,6 +385,12 @@ export function startIndividualShopBot(business: any) {
             service: aiResponse.service,
             date: aiResponse.date,
             time: aiResponse.time,
+          });
+
+          // ◄ ADDED: this enquiry just became a real booking — flip the
+          // lead over so it drops out of the "needs follow-up" view.
+          LeadModel.markConverted(_id.toString(), chatId).catch((err) => {
+            console.error(`⚠️  [BotManager] Failed to mark lead converted for ${chatId}:`, err);
           });
 
           bot.sendMessage(

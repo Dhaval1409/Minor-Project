@@ -13,8 +13,10 @@ import appointmentRoutes from "./routes/appointmentRoutes";
 import businessRoutes from "./routes/businessRoutes";
 import authRoutes from "./routes/authRoutes";
 import adminRoutes from "./routes/adminRoutes"; // <-- ADDED: Import admin routes
+import leadRoutes from "./routes/leadRoutes"
 import { errorHandler, notFoundHandler } from "./middleware/errorHandler";
 import { initializeAllSaaS_Bots } from "./config/botManager";
+
 
 // Force IPv4 resolution order to avoid connection delays with local setups
 dns.setDefaultResultOrder('ipv4first');
@@ -78,6 +80,7 @@ app.use("/auth", authRoutes);
 app.use("/appointments", appointmentRoutes);
 app.use("/business", businessRoutes);
 app.use("/admin", adminRoutes); // <-- ADDED: Mount the admin routes
+app.use("/leads", leadRoutes); // <-- ADDED: Mount the lead routes
 
 // Centralized System Error Interceptors
 app.use(notFoundHandler);
