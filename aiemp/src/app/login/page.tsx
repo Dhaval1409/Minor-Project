@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import Navbar from '@/components/Navbar';
 
 export default function LoginPage() {
-  const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://minor-project-five-iota.vercel.app/';
+  const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://minor-project-five-iota.vercel.app';
   const router = useRouter();
 
   const [checkingSession, setCheckingSession] = useState(true);
