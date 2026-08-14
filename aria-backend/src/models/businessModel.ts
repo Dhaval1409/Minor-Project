@@ -2,6 +2,18 @@
  * FILENAME: src/models/businessModel.ts
  */
 import { Schema, model, Document } from "mongoose";
+import { v4 as uuidv4 } from "uuid";
+
+// ◄ ADDED: richer service entry (name + price + optional duration + active flag).
+// Kept separate from the legacy `servicesProvided: string[]` field below so
+// any existing AI/bot code reading `servicesProvided` keeps working untouched.
+export interface IServiceItem {
+  id: string;
+  name: string;
+  price: number;
+  duration?: string;
+  active: boolean;
+}
 
 export interface IBusiness extends Document {
   name: string;          // Business/shop name (e.g. "AriaCare")
@@ -15,11 +27,23 @@ export interface IBusiness extends Document {
     closes: string;
   };
   servicesProvided: string[];
+  services: IServiceItem[]; // ◄ ADDED: full service catalog (name/price/duration/active)
   telegramBotToken?: string;
   phone?: string;
   createdAt: Date;
   updatedAt: Date;
 }
+
+const ServiceItemSchema = new Schema<IServiceItem>(
+  {
+    id: { type: String, default: () => uuidv4() },
+    name: { type: String, required: true, trim: true },
+    price: { type: Number, required: true, min: 0 },
+    duration: { type: String, trim: true, default: "" },
+    active: { type: Boolean, default: true },
+  },
+  { _id: false }
+);
 
 const BusinessSchema = new Schema<IBusiness>({
   name: {
@@ -59,6 +83,10 @@ const BusinessSchema = new Schema<IBusiness>({
   },
   servicesProvided: {
     type: [String],
+    default: []
+  },
+  services: {
+    type: [ServiceItemSchema], // ◄ ADDED
     default: []
   },
   telegramBotToken: {

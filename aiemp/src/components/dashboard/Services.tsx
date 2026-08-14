@@ -2,13 +2,11 @@
 
 import { useState, useEffect, useMemo } from 'react';
 
-const STORAGE_KEY = 'aria_services';
-
 interface Service {
   id: string;
   name: string;
-  price: string;
-  duration: string;
+  price: number;
+  duration?: string;
   active: boolean;
 }
 
@@ -22,111 +20,196 @@ function emptyForm(): ServiceForm {
   return { name: '', price: '', duration: '' };
 }
 
-// Shown the very first time (empty storage) so it's obvious how Edit,
-// Delete, Duplicate and the active/inactive toggle work. Feel free to
-// delete these once you've added your real services.
-const DEMO_SERVICES: Service[] = [
-  { id: 'demo-1', name: 'Haircut', price: '300', duration: '30 mins', active: true },
-  { id: 'demo-2', name: 'Beard Trim', price: '150', duration: '15 mins', active: true },
-  { id: 'demo-3', name: 'Hair Color', price: '1200', duration: '1.5 hours', active: false },
-];
-
 type SortKey = 'name' | 'price-asc' | 'price-desc';
 
 export function Services() {
   const [services, setServices] = useState<Service[]>([]);
   const [form, setForm] = useState<ServiceForm>(emptyForm());
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [loaded, setLoaded] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [saving, setSaving] = useState(false);
+  const [importing, setImporting] = useState(false);
   const [search, setSearch] = useState('');
   const [sortKey, setSortKey] = useState<SortKey>('name');
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
 
-  // Load saved services once on mount
-  useEffect(() => {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) {
-        const parsed = JSON.parse(raw);
-        setServices(parsed.length > 0 ? parsed : DEMO_SERVICES);
-      } else {
-        // Nothing saved yet — show demo data instead of a blank state
-        setServices(DEMO_SERVICES);
-      }
-    } catch (e) {
-      console.error('Failed to load services', e);
-      setServices(DEMO_SERVICES);
-    }
-    setLoaded(true);
-  }, []);
+  const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5000';
+  const businessId = typeof window !== 'undefined' ? localStorage.getItem('aria_business_id') : null;
 
-  // Persist any change, but only after the initial load has happened
-  // (otherwise the first render would wipe out saved data with [])
-  useEffect(() => {
-    if (!loaded) return;
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(services));
-    } catch (e) {
-      console.error('Failed to save services', e);
+  const loadServices = async () => {
+    if (!businessId) {
+      setError('No business selected. Please log in again.');
+      setLoading(false);
+      return;
     }
-  }, [services, loaded]);
+    setLoading(true);
+    setError('');
+    try {
+      const res = await fetch(`${API_BASE}/business/${businessId}/services`);
+      const data = await res.json();
+      if (!res.ok || data.success === false) {
+        throw new Error(data.message || 'Failed to load services.');
+      }
+      setServices(data.data ?? []);
+    } catch (err: any) {
+      console.error('❌ Error loading services:', err);
+      setError(err.message || 'Could not reach the backend.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadServices();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const resetForm = () => {
     setForm(emptyForm());
     setEditingId(null);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!businessId) return;
     if (!form.name.trim() || !form.price.trim()) return;
 
-    if (editingId) {
-      setServices((prev) =>
-        prev.map((s) => (s.id === editingId ? { ...s, ...form } : s))
-      );
-    } else {
-      setServices((prev) => [
-        ...prev,
-        { id: Date.now().toString(), ...form, active: true },
-      ]);
+    setSaving(true);
+    setError('');
+    try {
+      const payload = {
+        name: form.name.trim(),
+        price: Number(form.price),
+        duration: form.duration.trim(),
+      };
+
+      const url = editingId
+        ? `${API_BASE}/business/${businessId}/services/${editingId}`
+        : `${API_BASE}/business/${businessId}/services`;
+      const method = editingId ? 'PUT' : 'POST';
+
+      const res = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json();
+      if (!res.ok || data.success === false) {
+        throw new Error(data.message || 'Failed to save service.');
+      }
+
+      setServices(data.data ?? []);
+      resetForm();
+    } catch (err: any) {
+      console.error('❌ Error saving service:', err);
+      setError(err.message || 'Failed to save service.');
+    } finally {
+      setSaving(false);
     }
-    resetForm();
   };
 
   const handleEdit = (service: Service) => {
     setEditingId(service.id);
     setForm({
       name: service.name,
-      price: service.price,
+      price: String(service.price),
       duration: service.duration || '',
     });
     setPendingDeleteId(null);
   };
 
-  const handleDuplicate = (service: Service) => {
-    setServices((prev) => [
-      ...prev,
-      {
-        ...service,
-        id: Date.now().toString(),
-        name: `${service.name} (copy)`,
-      },
-    ]);
+  const handleDuplicate = async (service: Service) => {
+    if (!businessId) return;
+    setError('');
+    try {
+      const res = await fetch(`${API_BASE}/business/${businessId}/services`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: `${service.name} (copy)`,
+          price: service.price,
+          duration: service.duration || '',
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok || data.success === false) {
+        throw new Error(data.message || 'Failed to duplicate service.');
+      }
+      setServices(data.data ?? []);
+    } catch (err: any) {
+      console.error('❌ Error duplicating service:', err);
+      setError(err.message || 'Failed to duplicate service.');
+    }
   };
 
-  const handleToggleActive = (id: string) => {
-    setServices((prev) =>
-      prev.map((s) => (s.id === id ? { ...s, active: !s.active } : s))
-    );
+  const handleToggleActive = async (service: Service) => {
+    if (!businessId) return;
+    setError('');
+    try {
+      const res = await fetch(`${API_BASE}/business/${businessId}/services/${service.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ active: !service.active }),
+      });
+      const data = await res.json();
+      if (!res.ok || data.success === false) {
+        throw new Error(data.message || 'Failed to update service.');
+      }
+      setServices(data.data ?? []);
+    } catch (err: any) {
+      console.error('❌ Error toggling service:', err);
+      setError(err.message || 'Failed to update service.');
+    }
   };
 
   const confirmDelete = (id: string) => setPendingDeleteId(id);
   const cancelDelete = () => setPendingDeleteId(null);
 
-  const handleDelete = (id: string) => {
-    setServices((prev) => prev.filter((s) => s.id !== id));
-    if (editingId === id) resetForm();
-    setPendingDeleteId(null);
+  const handleDelete = async (id: string) => {
+    if (!businessId) return;
+    setError('');
+    try {
+      const res = await fetch(`${API_BASE}/business/${businessId}/services/${id}`, {
+        method: 'DELETE',
+      });
+      const data = await res.json();
+      if (!res.ok || data.success === false) {
+        throw new Error(data.message || 'Failed to delete service.');
+      }
+      setServices(data.data ?? []);
+      if (editingId === id) resetForm();
+    } catch (err: any) {
+      console.error('❌ Error deleting service:', err);
+      setError(err.message || 'Failed to delete service.');
+    } finally {
+      setPendingDeleteId(null);
+    }
+  };
+
+  // ◄ ADDED: pulls in service names from the legacy `servicesProvided`
+  // field (set during onboarding, still used by the AI bot) that haven't
+  // been added to the new Services list yet. Prices default to 0 —
+  // edit each to set a real price after importing.
+  const handleImportLegacy = async () => {
+    if (!businessId) return;
+    setImporting(true);
+    setError('');
+    try {
+      const res = await fetch(`${API_BASE}/business/${businessId}/services/import-legacy`, {
+        method: 'POST',
+      });
+      const data = await res.json();
+      if (!res.ok || data.success === false) {
+        throw new Error(data.message || 'Failed to import services.');
+      }
+      setServices(data.data ?? []);
+    } catch (err: any) {
+      console.error('❌ Error importing legacy services:', err);
+      setError(err.message || 'Failed to import services.');
+    } finally {
+      setImporting(false);
+    }
   };
 
   const visibleServices = useMemo(() => {
@@ -139,9 +222,7 @@ export function Services() {
 
     list = [...list].sort((a, b) => {
       if (sortKey === 'name') return a.name.localeCompare(b.name);
-      const priceA = parseFloat(a.price) || 0;
-      const priceB = parseFloat(b.price) || 0;
-      return sortKey === 'price-asc' ? priceA - priceB : priceB - priceA;
+      return sortKey === 'price-asc' ? a.price - b.price : b.price - a.price;
     });
 
     return list;
@@ -151,6 +232,28 @@ export function Services() {
 
   return (
     <div className="space-y-6">
+      {error && (
+        <div className="bg-rose-50 border border-rose-200 text-rose-700 text-sm rounded-lg px-4 py-3">
+          {error}
+        </div>
+      )}
+
+      {/* Import banner — only shown once the list is confirmed empty */}
+      {!loading && services.length === 0 && !error && (
+        <div className="bg-[#d9a05b]/10 border border-[#d9a05b]/30 rounded-xl px-5 py-4 flex items-center justify-between gap-4 flex-wrap">
+          <p className="text-sm text-ink">
+            You may already have services listed from onboarding. Import them here instead of retyping.
+          </p>
+          <button
+            onClick={handleImportLegacy}
+            disabled={importing}
+            className="text-xs bg-ink text-paper px-4 py-2 rounded-lg font-medium hover:opacity-90 transition disabled:opacity-50 whitespace-nowrap"
+          >
+            {importing ? 'Importing...' : 'Import from setup'}
+          </button>
+        </div>
+      )}
+
       {/* Add / edit form */}
       <div className="bg-white/60 border border-ink/10 rounded-xl p-6">
         <h2 className="font-display font-bold text-[16px] text-ink mb-4">
@@ -207,9 +310,10 @@ export function Services() {
           <div className="sm:col-span-3 flex items-center gap-3 pt-1">
             <button
               type="submit"
-              className="text-xs bg-ink text-paper px-4 py-2 rounded-lg font-medium hover:opacity-90 transition"
+              disabled={saving}
+              className="text-xs bg-ink text-paper px-4 py-2 rounded-lg font-medium hover:opacity-90 transition disabled:opacity-50"
             >
-              {editingId ? 'Save Changes' : 'Add Service'}
+              {saving ? 'Saving...' : editingId ? 'Save Changes' : 'Add Service'}
             </button>
             {editingId && (
               <button
@@ -258,7 +362,11 @@ export function Services() {
           </h2>
         </div>
 
-        {visibleServices.length === 0 ? (
+        {loading ? (
+          <div className="text-center text-text-on-paper-dim font-mono text-[13px] py-12">
+            Loading services...
+          </div>
+        ) : visibleServices.length === 0 ? (
           <div className="text-center text-text-on-paper-dim font-mono text-[13px] py-12">
             {services.length === 0
               ? 'No services added yet'
@@ -273,7 +381,7 @@ export function Services() {
               >
                 <div className="flex items-center gap-3 min-w-0">
                   <button
-                    onClick={() => handleToggleActive(s.id)}
+                    onClick={() => handleToggleActive(s)}
                     title={s.active ? 'Active — click to deactivate' : 'Inactive — click to activate'}
                     className={`shrink-0 w-2.5 h-2.5 rounded-full transition ${
                       s.active ? 'bg-emerald-500' : 'bg-ink/20'
@@ -290,6 +398,11 @@ export function Services() {
                     {s.duration && (
                       <p className="text-xs text-text-on-paper-dim font-mono mt-0.5">
                         {s.duration}
+                      </p>
+                    )}
+                    {s.price === 0 && (
+                      <p className="text-xs text-[#b5793a] font-mono mt-0.5">
+                        Price not set
                       </p>
                     )}
                   </div>
