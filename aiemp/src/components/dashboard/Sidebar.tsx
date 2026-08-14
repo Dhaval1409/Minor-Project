@@ -177,10 +177,10 @@ const NAV_GROUPS = [
   },
 ];
 
-export function Sidebar({ view, setView }) {
+export function Sidebar({ view, setView }: { view: string; setView: (view: string) => void }) {
   const [mobileOpen, setMobileOpen] = useState(false);
 
-  const handleSelect = (id) => {
+  const handleSelect = (id: string) => {
     setView(id);
     setMobileOpen(false);
   };
