@@ -8,9 +8,10 @@ const NAV_LINKS = [
   { href: '/#responsibilities', label: 'What she does' },
   { href: '/#channels', label: 'Calls + WhatsApp' },
   { href: '/#pricing', label: 'Pricing' },
-  { href: '/#faq', label: 'FAQ' },
+  { href: '/pocustomer', label: 'Customers' },
   { href: '/onboarding', label: 'Setup' },
   { href: '/dashboard', label: 'Dashboard' },
+   
 ];
 
 export default function Navbar() {
