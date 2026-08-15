@@ -12,6 +12,7 @@ import {
   Sparkles,
   Settings as SettingsIcon,
   CreditCard,
+  IdCard,
   Menu,
   X,
 } from 'lucide-react';
@@ -38,6 +39,7 @@ const NAV_GROUPS = [
     label: 'Manage',
     items: [
       { id: 'services', label: 'Services', icon: Sparkles },
+      { id: 'visiting-card', label: 'Visiting Card', icon: IdCard },
       { id: 'settings', label: 'Aria Settings', icon: SettingsIcon },
       { id: 'billing', label: 'Billing', icon: CreditCard },
     ],
