@@ -655,22 +655,38 @@ export default function VisitingCardGenerator() {
   };
 
   return (
-    <div className="min-h-screen w-full bg-stone-100 text-stone-900">
+    <div className="min-h-screen w-full overflow-x-hidden bg-stone-100 text-stone-900">
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap');
         .font-display { font-family: 'Space Grotesk', sans-serif; }
         .font-body { font-family: 'Inter', sans-serif; }
         .font-mono { font-family: 'JetBrains Mono', monospace; }
-        .flip-scene { perspective: 1800px; }
+        .flip-scene { perspective: 1800px; container-type: inline-size; }
         .flip-inner { transition: transform 0.7s cubic-bezier(.2,.8,.2,1); transform-style: preserve-3d; }
         .flip-inner.flipped { transform: rotateY(180deg); }
         .flip-face { backface-visibility: hidden; -webkit-backface-visibility: hidden; }
         .flip-back { transform: rotateY(180deg); }
+        /* Card faces are authored at a fixed 520px design width. On smaller
+           (mobile) viewports the whole face scales down uniformly via the
+           container's inline size, so every theme's type, padding and icons
+           shrink together instead of wrapping or overflowing. */
+        .card-face-scaler {
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 520px;
+          aspect-ratio: 1.75;
+          transform: scale(calc(100cqw / 520px));
+          transform-origin: top left;
+        }
+        @supports not (width: 1cqw) {
+          .card-face-scaler { position: static; width: 100%; height: 100%; transform: none; }
+        }
       `}</style>
 
-      <div className="max-w-[1180px] mx-auto px-6 py-10 font-body">
+      <div className="max-w-[1180px] mx-auto px-4 sm:px-6 py-6 sm:py-10 font-body">
         {/* header */}
-        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 mb-8">
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 mb-6 sm:mb-8">
           <div>
             <div className="font-mono text-[11px] tracking-[0.2em] uppercase text-amber-700 mb-1.5 flex items-center gap-2">
               <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
@@ -685,11 +701,11 @@ export default function VisitingCardGenerator() {
           {/* LEFT: form + themes */}
           <div className="space-y-5">
             <div className="bg-white border border-stone-200 rounded-[16px] overflow-hidden shadow-[0_8px_30px_rgb(0,0,0,0.02)]">
-              <div className="border-b border-dashed border-stone-200 bg-stone-50 px-5 py-3.5 flex items-center justify-between">
+              <div className="border-b border-dashed border-stone-200 bg-stone-50 px-4 sm:px-5 py-3 sm:py-3.5 flex items-center justify-between">
                 <span className="font-mono text-[11px] tracking-wider uppercase text-stone-500">Card details</span>
                 <span className="font-mono text-[11px] text-stone-400">6 fields</span>
               </div>
-              <div className="p-5 space-y-4">
+              <div className="p-4 sm:p-5 space-y-4">
                 {FIELDS.map((f) => (
                   <div key={f.key}>
                     <label className="block font-mono text-[10.5px] uppercase tracking-wider text-stone-400 mb-1.5">
@@ -699,7 +715,7 @@ export default function VisitingCardGenerator() {
                       value={data[f.key]}
                       onChange={update(f.key)}
                       placeholder={f.placeholder}
-                      className="w-full rounded-[10px] border border-stone-200 bg-stone-50 px-3.5 py-2.5 text-[14px] text-stone-900 outline-none focus:border-amber-400 focus:bg-white transition-colors"
+                      className="w-full rounded-[10px] border border-stone-200 bg-stone-50 px-3.5 py-2.5 text-[16px] sm:text-[14px] text-stone-900 outline-none focus:border-amber-400 focus:bg-white transition-colors"
                     />
                   </div>
                 ))}
@@ -707,10 +723,10 @@ export default function VisitingCardGenerator() {
             </div>
 
             <div className="bg-white border border-stone-200 rounded-[16px] overflow-hidden shadow-[0_8px_30px_rgb(0,0,0,0.02)]">
-              <div className="border-b border-dashed border-stone-200 bg-stone-50 px-5 py-3.5">
+              <div className="border-b border-dashed border-stone-200 bg-stone-50 px-4 sm:px-5 py-3 sm:py-3.5">
                 <span className="font-mono text-[11px] tracking-wider uppercase text-stone-500">Theme</span>
               </div>
-              <div className="p-5 grid grid-cols-3 gap-3">
+              <div className="p-4 sm:p-5 grid grid-cols-3 gap-2.5 sm:gap-3">
                 {THEMES.map((t) => {
                   const active = t.id === themeId;
                   return (
@@ -743,17 +759,21 @@ export default function VisitingCardGenerator() {
 
           {/* RIGHT: preview + export */}
           <div className="space-y-5">
-            <div className="bg-white border border-stone-200 rounded-[16px] p-8 sm:p-12 flex flex-col items-center shadow-[0_8px_30px_rgb(0,0,0,0.02)]">
+            <div className="bg-white border border-stone-200 rounded-[16px] p-5 sm:p-8 md:p-12 flex flex-col items-center shadow-[0_8px_30px_rgb(0,0,0,0.02)]">
               <div className="flip-scene w-full max-w-[520px]">
                 <div
                   className={`flip-inner relative w-full aspect-[1.75] cursor-pointer ${flipped ? "flipped" : ""}`}
                   onClick={() => setFlipped((f) => !f)}
                 >
                   <div className="flip-face absolute inset-0 rounded-[16px] overflow-hidden shadow-[0_20px_50px_-15px_rgba(0,0,0,0.35)]">
-                    <theme.Front data={data} />
+                    <div className="card-face-scaler">
+                      <theme.Front data={data} />
+                    </div>
                   </div>
                   <div className="flip-face flip-back absolute inset-0 rounded-[16px] overflow-hidden shadow-[0_20px_50px_-15px_rgba(0,0,0,0.35)]">
-                    <theme.Back data={data} />
+                    <div className="card-face-scaler">
+                      <theme.Back data={data} />
+                    </div>
                   </div>
                 </div>
               </div>
@@ -770,24 +790,24 @@ export default function VisitingCardGenerator() {
               <div className="font-mono text-[11px] text-stone-400">
                 Export as a 3.5×2in print-ready PNG, a vCard contact file, or copy the details as text.
               </div>
-              <div className="flex flex-wrap gap-2.5">
+              <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:gap-2.5">
                 <button
                   onClick={copySummary}
-                  className="inline-flex items-center gap-1.5 rounded-[10px] border border-stone-200 px-3.5 py-2.5 text-[13px] font-medium text-stone-700 hover:bg-stone-50 transition-colors"
+                  className="inline-flex w-full sm:w-auto items-center justify-center gap-1.5 rounded-[10px] border border-stone-200 px-3.5 py-2.5 text-[13px] font-medium text-stone-700 hover:bg-stone-50 active:bg-stone-100 transition-colors"
                 >
                   {copied ? <Check className="h-4 w-4 text-emerald-600" /> : null}
                   {copied ? "Copied" : "Copy text"}
                 </button>
                 <button
                   onClick={downloadVCard}
-                  className="inline-flex items-center gap-1.5 rounded-[10px] border border-stone-200 px-3.5 py-2.5 text-[13px] font-medium text-stone-700 hover:bg-stone-50 transition-colors"
+                  className="inline-flex w-full sm:w-auto items-center justify-center gap-1.5 rounded-[10px] border border-stone-200 px-3.5 py-2.5 text-[13px] font-medium text-stone-700 hover:bg-stone-50 active:bg-stone-100 transition-colors"
                 >
                   <FileDown className="h-4 w-4" />
                   vCard
                 </button>
                 <button
                   onClick={downloadPNG}
-                  className="inline-flex items-center gap-1.5 rounded-[10px] bg-stone-900 text-white px-4 py-2.5 text-[13px] font-medium hover:bg-stone-800 transition-colors"
+                  className="inline-flex w-full sm:w-auto items-center justify-center gap-1.5 rounded-[10px] bg-stone-900 text-white px-4 py-2.5 text-[13px] font-medium hover:bg-stone-800 active:bg-stone-700 transition-colors"
                 >
                   <Download className="h-4 w-4" />
                   Download PNG
