@@ -39,7 +39,7 @@ function Reveal({ children }: { children: ReactNode }) {
 }
 
 const responsibilities = [
-  { icon: '📞', title: 'Answer customers', desc: 'Picks up every call and WhatsApp message, answers questions about hours, pricing, and services.' },
+  { icon: '📞', title: 'Answer customers', desc: 'Picks up every call and Telegram message, answers questions about hours, pricing, and services.' },
   { icon: '🗓️', title: 'Book appointments', desc: 'Checks your calendar live and confirms a slot on the spot — no back-and-forth.' },
   { icon: '🧾', title: 'Handle orders', desc: 'Takes down orders, confirms details, and passes them straight to your counter.' },
   { icon: '⏰', title: 'Send reminders', desc: 'Follows up before appointments so customers actually show up.' },
@@ -55,7 +55,7 @@ const testimonials = [
 
 const faqs = [
   { q: 'Does Aria really sound natural on calls?', a: "Yes — Aria uses a natural voice engine, not a robotic IVR. Most customers don't realise they're speaking to an AI unless told." },
-  { q: "What happens if a customer asks something Aria can't answer?", a: 'She notes it down and either escalates to you directly on WhatsApp or offers a callback — she never guesses.' },
+  { q: "What happens if a customer asks something Aria can't answer?", a: 'She notes it down and either escalates to you directly on Telegram or offers a callback — she never guesses.' },
   { q: 'Do I need any special hardware or a new phone number?', a: 'No. Aria connects to your existing business number and calendar — nothing to install.' },
   { q: 'Can I cancel anytime?', a: 'Yes, month to month, no lock-in contract.' },
 ];
@@ -88,7 +88,6 @@ export default function Home() {
         <div className="relative w-full h-[520px] sm:h-[580px] md:h-auto md:aspect-[16/9] md:max-h-[86vh] md:min-h-[460px] flex items-center">
           {/* Mobile / tablet — static image */}
           <img
-            // src="https://res.cloudinary.com/xbicmhte/image/upload/v1786285653/aria.png"
             src="https://res.cloudinary.com/xbicmhte/image/upload/v1786450785/aria-robot.png"
             alt="Aria, your AI employee"
             className="block md:hidden absolute inset-0 w-full h-full object-cover object-[62%_26%]"
@@ -96,7 +95,6 @@ export default function Home() {
           {/* Desktop — looping video */}
           <video
             className="hidden md:block absolute inset-0 w-full h-full object-cover object-[100%_20%]"
-            // src="https://res.cloudinary.com/xbicmhte/video/upload/f_auto,q_auto/aria.mp4"
             src="https://res.cloudinary.com/xbicmhte/video/upload/v1786449184/robotic_aria.mp4"
             poster="/aria-hero-poster.jpg"
             autoPlay
@@ -105,16 +103,10 @@ export default function Home() {
             playsInline
           />
 
-          {/* Strong scrim on the left where the copy sits, fading to clear on the
-              right where the character is. Mobile needs a heavier wash since the
-              text column takes up nearly the full width there. */}
           <div className="absolute inset-0 bg-gradient-to-r from-ink via-ink/90 md:via-ink/70 to-ink/35 md:to-ink/15" />
-          {/* Gentle brand-color kiss, top right */}
           <div className="absolute inset-0 bg-[radial-gradient(800px_420px_at_85%_-10%,rgba(217,142,43,0.18),transparent_60%)]" />
-          {/* Blends seamlessly into the dark stat strip that follows — no hard seam */}
           <div className="absolute inset-x-0 bottom-0 h-24 md:h-40 bg-gradient-to-b from-transparent via-ink/75 to-ink" />
 
-          {/* Content */}
           <div className="relative z-10 w-full pl-6 sm:pl-10 md:pl-24 lg:pl-32 pr-6 sm:pr-8">
             <div className="max-w-[600px] mt-[40px] sm:mt-0">
               <div className="font-mono text-[10.5px] sm:text-[12.5px] md:text-[14px] tracking-[0.08em] uppercase text-emerald font-semibold flex items-center gap-2 mb-[14px] sm:mb-[22px] before:content-[''] before:w-1.5 before:h-1.5 before:bg-emerald before:rounded-full">
@@ -124,7 +116,7 @@ export default function Home() {
                 Hire an AI employee for <span className="text-amber">₹1,999/month.</span>
               </h1>
               <p className="mt-[10px] sm:mt-[18px] text-[11px] sm:text-[15px] md:text-[19px] text-text-on-ink-dim max-w-[480px] leading-relaxed">
-                Aria answers your phone, replies on WhatsApp, books appointments, and follows up with every lead — while you run the shop.
+                Aria answers your phone, replies on Telegram, books appointments, and follows up with every lead — while you run the shop.
               </p>
               <div className="flex flex-wrap gap-2 sm:gap-3.5 mt-[14px] sm:mt-[26px]">
                 <button
@@ -206,7 +198,7 @@ export default function Home() {
               <div className="font-mono text-[12.5px] tracking-wider uppercase text-amber font-semibold flex items-center gap-2 mb-4 before:content-[''] before:w-1.5 before:h-1.5 before:bg-amber before:rounded-full">
                 Two ways in
               </div>
-              <h2 className="font-display text-[28px] md:text-[40px] font-bold tracking-tight text-ink">She picks up the phone. She replies on WhatsApp too.</h2>
+              <h2 className="font-display text-[28px] md:text-[40px] font-bold tracking-tight text-ink">She picks up the phone. She replies on Telegram too.</h2>
               <p className="mt-3.5 text-[16.5px] text-text-on-paper-dim">Customers reach you however they already do — Aria handles both the same way.</p>
             </div>
           </Reveal>
@@ -227,16 +219,16 @@ export default function Home() {
                 </div>
               </div>
 
-              {/* WhatsApp Card */}
+              {/* Telegram Card */}
               <div className="bg-paper-dim border border-ink/10 rounded-[18px] p-[30px] text-text-on-paper overflow-hidden">
-                <span className="inline-flex items-center gap-1.5 font-mono text-[11px] uppercase tracking-wider px-3 py-1.5 rounded-full bg-emerald/12 text-emerald mb-[18px]">
-                  💬 WhatsApp
+                <span className="inline-flex items-center gap-1.5 font-mono text-[11px] uppercase tracking-wider px-3 py-1.5 rounded-full bg-sky-100 text-sky-600 mb-[18px]">
+                  ✈️ Telegram
                 </span>
                 <h3 className="font-display text-[22px] font-bold mb-2.5">Same conversation, in writing</h3>
                 <p className="text-[14.5px] text-text-on-paper-dim leading-relaxed">Order confirmations, reminders and follow-ups land where your customers already check first.</p>
                 <div className="mt-[22px] flex flex-col gap-2">
                   <div className="max-w-[82%] p-3.5 rounded-[12px] rounded-bl-sm text-[13px] leading-snug bg-white border border-ink/10 self-start">Is the blue kurta size M in stock?</div>
-                  <div className="max-w-[82%] p-3.5 rounded-[12px] rounded-br-sm text-[13px] leading-snug bg-emerald text-white self-end">Yes, 2 left. Want me to hold one and share the payment link?</div>
+                  <div className="max-w-[82%] p-3.5 rounded-[12px] rounded-br-sm text-[13px] leading-snug bg-sky-500 text-white self-end">Yes, 2 left. Want me to hold one and share the payment link?</div>
                   <div className="max-w-[82%] p-3.5 rounded-[12px] rounded-bl-sm text-[13px] leading-snug bg-white border border-ink/10 self-start">Yes, hold it!</div>
                 </div>
               </div>
@@ -272,9 +264,9 @@ export default function Home() {
                 </div>
                 <div className="p-[26px] pt-[22px] flex-1 flex flex-col">
                   <div className="space-y-4 flex-1">
-                    <div className="flex gap-2.5 text-[13.5px] border-b border-ink/10 pb-2 text-text-on-paper-dim"><span className="text-emerald font-bold">✓</span>WhatsApp replies + order handling</div>
+                    <div className="flex gap-2.5 text-[13.5px] border-b border-ink/10 pb-2 text-text-on-paper-dim"><span className="text-emerald font-bold">✓</span>Telegram replies + order handling</div>
                     <div className="flex gap-2.5 text-[13.5px] border-b border-ink/10 pb-2 text-text-on-paper-dim"><span className="text-emerald font-bold">✓</span>Up to 300 conversations / month</div>
-                    <div className="flex gap-2.5 text-[13.5px] border-b border-ink/10 pb-2 text-text-on-paper-dim"><span className="text-emerald font-bold">✓</span>Daily report on WhatsApp</div>
+                    <div className="flex gap-2.5 text-[13.5px] border-b border-ink/10 pb-2 text-text-on-paper-dim"><span className="text-emerald font-bold">✓</span>Daily report on Telegram</div>
                     <div className="flex gap-2.5 text-[13.5px] text-text-on-paper-dim"><span className="text-emerald font-bold">✓</span>English + Hindi</div>
                   </div>
                   <button className="mt-6 w-full py-3.5 rounded-[10px] font-semibold text-[14px] border-[1.5px] border-ink bg-transparent text-ink hover:bg-ink/5 transition-colors">
@@ -452,5 +444,3 @@ export default function Home() {
     </div>
   );
 }
-
-
