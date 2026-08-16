@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useMemo, type FC, type ChangeEvent } from "react";
+import { useState, useRef, useMemo, type FC, type ChangeEvent, type CSSProperties } from "react";
 import { Phone, Mail, Globe, Download, RotateCw, FileDown, Check } from "lucide-react";
 
 /* ---------------------------------------------------------
@@ -726,86 +726,128 @@ const THEMES: Theme[] = [
   },
 
   {
-    id: "forest-silver",
-    name: "Forest Silver",
-    swatch: "linear-gradient(135deg,#0B2818,#123722 60%,#B8BEC4)",
-    Front: ({ data }) => (
-      <div
-        className="relative w-full h-full flex flex-col justify-between p-8 overflow-hidden"
-        style={{ background: "linear-gradient(135deg,#0B2818 0%,#132E20 100%)" }}
-      >
+    id: "forest-gold",
+    name: "Forest Gold",
+    swatch: "linear-gradient(135deg,#0B2818,#123722 60%,#C9A24B)",
+    Front: ({ data }) => {
+      const shine: CSSProperties = {
+        backgroundImage:
+          "linear-gradient(100deg,#8A6422 0%,#F6E7B4 22%,#C9A24B 45%,#F9EFC8 55%,#9C7A30 78%,#EAD08A 100%)",
+        backgroundClip: "text",
+        WebkitBackgroundClip: "text",
+        WebkitTextFillColor: "transparent",
+        color: "transparent",
+      };
+      return (
         <div
-          className="absolute -right-10 -top-10 w-40 h-40 rounded-full opacity-20"
-          style={{ background: "radial-gradient(circle,#C4C9CE,transparent 70%)" }}
-        />
-        <div className="flex items-center justify-between relative z-10">
+          className="relative w-full h-full flex flex-col justify-between p-8 overflow-hidden"
+          style={{ background: "linear-gradient(135deg,#071C10 0%,#0F2A1B 100%)" }}
+        >
           <div
-            className="w-11 h-11 rounded-full flex items-center justify-center font-display font-bold text-[15px]"
-            style={{ background: "#C4C9CE", color: "#0B2818" }}
-          >
+            className="absolute -right-10 -top-10 w-40 h-40 rounded-full opacity-20"
+            style={{ background: "radial-gradient(circle,#F6E7B4,transparent 70%)" }}
+          />
+          <div className="flex items-center justify-between relative z-10">
+            <div
+              className="w-11 h-11 rounded-full flex items-center justify-center font-display font-bold text-[15px]"
+              style={{
+                backgroundImage: "linear-gradient(135deg,#F6E7B4,#C9A24B 55%,#8A6422)",
+                color: "#0B2818",
+              }}
+            >
+              {initials(data.name) || "??"}
+            </div>
+            <span className="font-mono font-semibold text-[10px] tracking-[0.15em] uppercase" style={shine}>
+              {data.company || "Company"}
+            </span>
+          </div>
+          <div className="relative z-10">
+            <div className="font-display font-bold text-[26px] leading-tight" style={shine}>
+              {data.name || "Your Name"}
+            </div>
+            <div className="font-mono font-semibold text-[11px] tracking-[0.1em] uppercase mt-1" style={shine}>
+              {data.title || "Your Title"}
+            </div>
+            <div
+              className="h-px w-full my-3"
+              style={{ background: "linear-gradient(90deg,transparent,#C9A24B 25%,#F6E7B4 50%,#C9A24B 75%,transparent)" }}
+            />
+            <div className="flex flex-wrap gap-x-5 gap-y-1 font-mono font-medium text-[10.5px]">
+              {data.phone && (
+                <span className="inline-flex items-center gap-1.5" style={shine}>
+                  <Phone className="h-3 w-3" style={{ color: "#C9A24B" }} /> {data.phone}
+                </span>
+              )}
+              {data.email && (
+                <span className="inline-flex items-center gap-1.5" style={shine}>
+                  <Mail className="h-3 w-3" style={{ color: "#C9A24B" }} /> {data.email}
+                </span>
+              )}
+              {data.website && (
+                <span className="inline-flex items-center gap-1.5" style={shine}>
+                  <Globe className="h-3 w-3" style={{ color: "#C9A24B" }} /> {data.website}
+                </span>
+              )}
+            </div>
+          </div>
+        </div>
+      );
+    },
+    Back: ({ data }) => {
+      const shine: CSSProperties = {
+        backgroundImage: "linear-gradient(100deg,#8A6422 0%,#F6E7B4 30%,#C9A24B 55%,#F9EFC8 75%,#9C7A30 100%)",
+        backgroundClip: "text",
+        WebkitBackgroundClip: "text",
+        WebkitTextFillColor: "transparent",
+        color: "transparent",
+      };
+      return (
+        <div
+          className="w-full h-full flex flex-col items-center justify-center gap-3"
+          style={{ background: "linear-gradient(135deg,#071C10 0%,#0F2A1B 100%)" }}
+        >
+          <div className="font-display font-bold text-[30px]" style={shine}>
             {initials(data.name) || "??"}
           </div>
-          <span className="font-mono text-[10px] tracking-[0.15em] uppercase" style={{ color: "#C4C9CE" }}>
+          <div className="font-mono font-medium text-[10px] tracking-[0.25em] uppercase" style={shine}>
             {data.company || "Company"}
-          </span>
-        </div>
-        <div className="relative z-10">
-          <div className="font-display font-bold text-[26px] leading-tight text-white">{data.name || "Your Name"}</div>
-          <div className="font-mono text-[11px] tracking-[0.1em] uppercase mt-1" style={{ color: "#C4C9CE" }}>
-            {data.title || "Your Title"}
-          </div>
-          <div className="h-px w-full my-3" style={{ background: "rgba(196,201,206,0.25)" }} />
-          <div className="flex flex-wrap gap-x-5 gap-y-1 font-mono text-[10.5px] text-white/70">
-            {data.phone && (
-              <span className="inline-flex items-center gap-1.5">
-                <Phone className="h-3 w-3" /> {data.phone}
-              </span>
-            )}
-            {data.email && (
-              <span className="inline-flex items-center gap-1.5">
-                <Mail className="h-3 w-3" /> {data.email}
-              </span>
-            )}
-            {data.website && (
-              <span className="inline-flex items-center gap-1.5">
-                <Globe className="h-3 w-3" /> {data.website}
-              </span>
-            )}
           </div>
         </div>
-      </div>
-    ),
-    Back: ({ data }) => (
-      <div
-        className="w-full h-full flex flex-col items-center justify-center gap-3"
-        style={{ background: "linear-gradient(135deg,#0B2818 0%,#132E20 100%)" }}
-      >
-        <div
-          className="w-16 h-16 rounded-full flex items-center justify-center font-display font-bold text-[24px]"
-          style={{ background: "#C4C9CE", color: "#0B2818" }}
-        >
-          {initials(data.name) || "??"}
-        </div>
-        <div className="font-mono text-[10px] tracking-[0.25em] uppercase text-white/50">
-          {data.company || "Company"}
-        </div>
-      </div>
-    ),
+      );
+    },
     draw(ctx, data, w, h) {
       const g = ctx.createLinearGradient(0, 0, w, h);
-      g.addColorStop(0, "#0B2818");
-      g.addColorStop(1, "#132E20");
+      g.addColorStop(0, "#071C10");
+      g.addColorStop(1, "#0F2A1B");
       ctx.fillStyle = g;
       ctx.fillRect(0, 0, w, h);
 
       const glow = ctx.createRadialGradient(w - 60, 40, 10, w - 60, 40, 220);
-      glow.addColorStop(0, "rgba(196,201,206,0.22)");
-      glow.addColorStop(1, "rgba(196,201,206,0)");
+      glow.addColorStop(0, "rgba(246,231,180,0.18)");
+      glow.addColorStop(1, "rgba(246,231,180,0)");
       ctx.fillStyle = glow;
       ctx.fillRect(0, 0, w, h);
 
+      // reusable shiny-gold gradient for text, angled across the card
+      const goldText = (x0: number, y0: number, x1: number, y1: number) => {
+        const gr = ctx.createLinearGradient(x0, y0, x1, y1);
+        gr.addColorStop(0, "#8A6422");
+        gr.addColorStop(0.22, "#F6E7B4");
+        gr.addColorStop(0.45, "#C9A24B");
+        gr.addColorStop(0.6, "#F9EFC8");
+        gr.addColorStop(0.8, "#9C7A30");
+        gr.addColorStop(1, "#EAD08A");
+        return gr;
+      };
+
       const pad = 60;
-      ctx.fillStyle = "#C4C9CE";
+
+      // avatar circle with gold gradient fill
+      const circleGrad = ctx.createLinearGradient(pad, pad, pad + 68, pad + 60);
+      circleGrad.addColorStop(0, "#F6E7B4");
+      circleGrad.addColorStop(0.55, "#C9A24B");
+      circleGrad.addColorStop(1, "#8A6422");
+      ctx.fillStyle = circleGrad;
       ctx.beginPath();
       ctx.arc(pad + 34, pad + 30, 34, 0, Math.PI * 2);
       ctx.fill();
@@ -816,28 +858,34 @@ const THEMES: Theme[] = [
       ctx.fillText(initials(data.name) || "??", pad + 34, pad + 32);
 
       ctx.textAlign = "right";
-      ctx.fillStyle = "#C4C9CE";
       ctx.font = "600 20px monospace";
+      ctx.fillStyle = goldText(w - 460, pad + 20, w - pad, pad + 20);
       ctx.fillText(truncate(ctx, (data.company || "Company").toUpperCase(), 420), w - pad, pad + 38);
 
       ctx.textAlign = "left";
-      ctx.fillStyle = "#FFFFFF";
       ctx.font = "bold 54px sans-serif";
+      ctx.fillStyle = goldText(pad, h - 190, pad + 620, h - 190);
       ctx.fillText(data.name || "Your Name", pad, h - 190);
 
-      ctx.fillStyle = "#C4C9CE";
       ctx.font = "600 22px monospace";
+      ctx.fillStyle = goldText(pad, h - 150, pad + 400, h - 150);
       ctx.fillText((data.title || "Your Title").toUpperCase(), pad, h - 150);
 
-      ctx.strokeStyle = "rgba(196,201,206,0.25)";
+      const lineGrad = ctx.createLinearGradient(pad, h - 120, w - pad, h - 120);
+      lineGrad.addColorStop(0, "rgba(201,162,75,0)");
+      lineGrad.addColorStop(0.25, "rgba(201,162,75,0.6)");
+      lineGrad.addColorStop(0.5, "rgba(246,231,180,0.85)");
+      lineGrad.addColorStop(0.75, "rgba(201,162,75,0.6)");
+      lineGrad.addColorStop(1, "rgba(201,162,75,0)");
+      ctx.strokeStyle = lineGrad;
       ctx.lineWidth = 1;
       ctx.beginPath();
       ctx.moveTo(pad, h - 120);
       ctx.lineTo(w - pad, h - 120);
       ctx.stroke();
 
-      ctx.fillStyle = "rgba(255,255,255,0.7)";
       ctx.font = "20px monospace";
+      ctx.fillStyle = goldText(pad, h - 80, pad + 700, h - 80);
       const parts = [data.phone, data.email, data.website].filter(Boolean);
       ctx.fillText(truncate(ctx, parts.join("     "), w - pad * 2), pad, h - 80);
     },
