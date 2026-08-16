@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useRef, useMemo, type FC, type ChangeEvent, type CSSProperties } from "react";
-import { Phone, Mail, Globe, Download, RotateCw, FileDown, Check } from "lucide-react";
+import { useState, useRef, useMemo, useEffect, useCallback, type FC, type ChangeEvent, type CSSProperties, type PointerEvent as ReactPointerEvent } from "react";
+import { Phone, Mail, Globe, Download, RotateCw, FileDown, Check, Palette, Save, Star, Sparkles } from "lucide-react";
 
 /* ---------------------------------------------------------
    TYPES
@@ -24,6 +24,7 @@ interface Theme {
   id: string;
   name: string;
   swatch: string;
+  recommended?: boolean;
   Front: FC<FaceProps>;
   Back: FC<FaceProps>;
   draw: (ctx: CanvasRenderingContext2D, data: CardData, w: number, h: number) => void;
@@ -35,11 +36,13 @@ interface FieldConfig {
   placeholder: string;
 }
 
+interface CustomColors {
+  bg: string;
+  text: string;
+}
+
 /* ---------------------------------------------------------
-   THEME DEFINITIONS
-   Each theme owns its own JSX face (front/back) AND its own
-   canvas draw routine, so the exported PNG always matches
-   what's on screen.
+   COLOR HELPERS
 --------------------------------------------------------- */
 
 const initials = (name: string): string =>
@@ -58,6 +61,101 @@ function truncate(ctx: CanvasRenderingContext2D, text: string, maxWidth: number)
   }
   return t + "…";
 }
+
+function hexToRgb(hex: string): [number, number, number] {
+  let h = hex.replace("#", "");
+  if (h.length === 3) h = h.split("").map((c) => c + c).join("");
+  const n = parseInt(h, 16);
+  if (Number.isNaN(n) || h.length !== 6) return [0, 0, 0];
+  return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+}
+
+function rgba(hex: string, alpha: number): string {
+  const [r, g, b] = hexToRgb(hex);
+  return `rgba(${r},${g},${b},${alpha})`;
+}
+
+function relativeLuminance(hex: string): number {
+  const [r, g, b] = hexToRgb(hex).map((v) => {
+    const c = v / 255;
+    return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+  });
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+}
+
+/** Picks black or white text that reads clearly against a given background. */
+function readableTextFor(hex: string): string {
+  return relativeLuminance(hex) > 0.42 ? "#14110C" : "#FFFFFF";
+}
+
+function hslToHex(h: number, s: number, l: number): string {
+  h = ((h % 360) + 360) % 360;
+  s = Math.min(1, Math.max(0, s));
+  l = Math.min(1, Math.max(0, l));
+  const c = (1 - Math.abs(2 * l - 1)) * s;
+  const x = c * (1 - Math.abs(((h / 60) % 2) - 1));
+  const m = l - c / 2;
+  let r = 0, g = 0, b = 0;
+  if (h < 60) [r, g, b] = [c, x, 0];
+  else if (h < 120) [r, g, b] = [x, c, 0];
+  else if (h < 180) [r, g, b] = [0, c, x];
+  else if (h < 240) [r, g, b] = [0, x, c];
+  else if (h < 300) [r, g, b] = [x, 0, c];
+  else [r, g, b] = [c, 0, x];
+  const toHex = (v: number) =>
+    Math.round((v + m) * 255).toString(16).padStart(2, "0");
+  return `#${toHex(r)}${toHex(g)}${toHex(b)}`.toUpperCase();
+}
+
+function hexToHsl(hex: string): { h: number; s: number; l: number } {
+  const [r, g, b] = hexToRgb(hex).map((v) => v / 255);
+  const max = Math.max(r, g, b);
+  const min = Math.min(r, g, b);
+  const l = (max + min) / 2;
+  if (max === min) return { h: 0, s: 0, l };
+  const d = max - min;
+  const s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+  let h = 0;
+  if (max === r) h = ((g - b) / d + (g < b ? 6 : 0)) * 60;
+  else if (max === g) h = ((b - r) / d + 2) * 60;
+  else h = ((r - g) / d + 4) * 60;
+  return { h, s, l };
+}
+
+/* Named preset swatches — used for both the background and text/accent pickers */
+const PRESET_COLORS: { name: string; hex: string }[] = [
+  { name: "Green", hex: "#16A34A" },
+  { name: "Forest Green", hex: "#14532D" },
+  { name: "Emerald", hex: "#0F9D6E" },
+  { name: "Olive", hex: "#556B2F" },
+  { name: "Teal", hex: "#0F766E" },
+  { name: "Ocean Blue", hex: "#0369A1" },
+  { name: "Royal Blue", hex: "#1D4ED8" },
+  { name: "Navy", hex: "#122A4E" },
+  { name: "Slate", hex: "#334155" },
+  { name: "Charcoal", hex: "#1F2937" },
+  { name: "Black", hex: "#0A0A0A" },
+  { name: "Burgundy", hex: "#5C1023" },
+  { name: "Maroon", hex: "#7F1D1D" },
+  { name: "Crimson", hex: "#B91C1C" },
+  { name: "Rose", hex: "#9F1239" },
+  { name: "Plum", hex: "#581C5C" },
+  { name: "Amber", hex: "#D98E2B" },
+  { name: "Gold", hex: "#C9A24B" },
+  { name: "Brown", hex: "#5C3A21" },
+  { name: "Ivory", hex: "#FFFFF0" },
+  { name: "White", hex: "#FFFFFF" },
+  { name: "Stone Grey", hex: "#78716C" },
+];
+
+const DEFAULT_CUSTOM: CustomColors = { bg: "#14532D", text: "#F5F1E6" };
+
+/* ---------------------------------------------------------
+   THEME DEFINITIONS
+   Each theme owns its own JSX face (front/back) AND its own
+   canvas draw routine, so the exported PNG always matches
+   what's on screen.
+--------------------------------------------------------- */
 
 const THEMES: Theme[] = [
   {
@@ -729,6 +827,7 @@ const THEMES: Theme[] = [
     id: "forest-gold",
     name: "Forest Gold",
     swatch: "linear-gradient(135deg,#0B2818,#123722 60%,#C9A24B)",
+    recommended: true,
     Front: ({ data }) => {
       const shine: CSSProperties = {
         backgroundImage:
@@ -828,7 +927,6 @@ const THEMES: Theme[] = [
       ctx.fillStyle = glow;
       ctx.fillRect(0, 0, w, h);
 
-      // reusable shiny-gold gradient for text, angled across the card
       const goldText = (x0: number, y0: number, x1: number, y1: number) => {
         const gr = ctx.createLinearGradient(x0, y0, x1, y1);
         gr.addColorStop(0, "#8A6422");
@@ -842,7 +940,6 @@ const THEMES: Theme[] = [
 
       const pad = 60;
 
-      // avatar circle with gold gradient fill
       const circleGrad = ctx.createLinearGradient(pad, pad, pad + 68, pad + 60);
       circleGrad.addColorStop(0, "#F6E7B4");
       circleGrad.addColorStop(0.55, "#C9A24B");
@@ -910,19 +1007,300 @@ const DEFAULT_DATA: CardData = {
   website: "meeradental.in",
 };
 
+const CUSTOM_ID = "custom";
+const STORAGE_KEY = "visiting-card:custom-colors";
+
+/* ---------------------------------------------------------
+   CUSTOM (COLOR-WHEEL DRIVEN) CARD FACES
+--------------------------------------------------------- */
+
+const CustomFront: FC<FaceProps & { colors: CustomColors }> = ({ data, colors }) => (
+  <div
+    className="relative w-full h-full flex flex-col justify-between p-8 overflow-hidden"
+    style={{ background: colors.bg }}
+  >
+    <div
+      className="absolute -right-10 -top-10 w-40 h-40 rounded-full opacity-15"
+      style={{ background: `radial-gradient(circle, ${colors.text}, transparent 70%)` }}
+    />
+    <div className="flex items-center justify-between relative z-10">
+      <div
+        className="w-11 h-11 rounded-full flex items-center justify-center font-display font-bold text-[15px]"
+        style={{ background: colors.text, color: colors.bg }}
+      >
+        {initials(data.name) || "??"}
+      </div>
+      <span className="font-mono text-[10px] tracking-[0.15em] uppercase" style={{ color: colors.text }}>
+        {data.company || "Company"}
+      </span>
+    </div>
+    <div className="relative z-10">
+      <div className="font-display font-bold text-[26px] leading-tight" style={{ color: colors.text }}>
+        {data.name || "Your Name"}
+      </div>
+      <div className="font-mono text-[11px] tracking-[0.1em] uppercase mt-1" style={{ color: rgba(colors.text, 0.75) }}>
+        {data.title || "Your Title"}
+      </div>
+      <div className="h-px w-full my-3" style={{ background: rgba(colors.text, 0.2) }} />
+      <div className="flex flex-wrap gap-x-5 gap-y-1 font-mono text-[10.5px]" style={{ color: rgba(colors.text, 0.7) }}>
+        {data.phone && (
+          <span className="inline-flex items-center gap-1.5">
+            <Phone className="h-3 w-3" /> {data.phone}
+          </span>
+        )}
+        {data.email && (
+          <span className="inline-flex items-center gap-1.5">
+            <Mail className="h-3 w-3" /> {data.email}
+          </span>
+        )}
+        {data.website && (
+          <span className="inline-flex items-center gap-1.5">
+            <Globe className="h-3 w-3" /> {data.website}
+          </span>
+        )}
+      </div>
+    </div>
+  </div>
+);
+
+const CustomBack: FC<FaceProps & { colors: CustomColors }> = ({ data, colors }) => (
+  <div
+    className="w-full h-full flex flex-col items-center justify-center gap-3"
+    style={{ background: colors.bg }}
+  >
+    <div
+      className="w-16 h-16 rounded-full flex items-center justify-center font-display font-bold text-[24px]"
+      style={{ background: colors.text, color: colors.bg }}
+    >
+      {initials(data.name) || "??"}
+    </div>
+    <div className="font-mono text-[10px] tracking-[0.25em] uppercase" style={{ color: rgba(colors.text, 0.6) }}>
+      {data.company || "Company"}
+    </div>
+  </div>
+);
+
+function drawCustom(ctx: CanvasRenderingContext2D, data: CardData, w: number, h: number, colors: CustomColors) {
+  ctx.fillStyle = colors.bg;
+  ctx.fillRect(0, 0, w, h);
+
+  const pad = 60;
+  ctx.fillStyle = colors.text;
+  ctx.beginPath();
+  ctx.arc(pad + 34, pad + 30, 34, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = colors.bg;
+  ctx.font = "bold 30px sans-serif";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillText(initials(data.name) || "??", pad + 34, pad + 32);
+
+  ctx.textAlign = "right";
+  ctx.fillStyle = colors.text;
+  ctx.font = "600 20px monospace";
+  ctx.fillText(truncate(ctx, (data.company || "Company").toUpperCase(), 420), w - pad, pad + 38);
+
+  ctx.textAlign = "left";
+  ctx.fillStyle = colors.text;
+  ctx.font = "bold 54px sans-serif";
+  ctx.fillText(data.name || "Your Name", pad, h - 190);
+
+  ctx.fillStyle = rgba(colors.text, 0.85);
+  ctx.font = "600 22px monospace";
+  ctx.fillText((data.title || "Your Title").toUpperCase(), pad, h - 150);
+
+  ctx.strokeStyle = rgba(colors.text, 0.2);
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(pad, h - 120);
+  ctx.lineTo(w - pad, h - 120);
+  ctx.stroke();
+
+  ctx.fillStyle = rgba(colors.text, 0.7);
+  ctx.font = "20px monospace";
+  const parts = [data.phone, data.email, data.website].filter(Boolean);
+  ctx.fillText(truncate(ctx, parts.join("     "), w - pad * 2), pad, h - 80);
+}
+
+/* ---------------------------------------------------------
+   COLOR WHEEL PICKER
+   Hue/saturation ring (drag or click) + a lightness slider,
+   plus a strip of named preset swatches for one-tap picks.
+--------------------------------------------------------- */
+
+const WHEEL_SIZE = 148;
+const WHEEL_RADIUS = WHEEL_SIZE / 2;
+
+const ColorWheel: FC<{ label: string; value: string; onChange: (hex: string) => void }> = ({ label, value, onChange }) => {
+  const wheelRef = useRef<HTMLDivElement>(null);
+  const draggingRef = useRef(false);
+  const { h, s, l } = useMemo(() => hexToHsl(value), [value]);
+
+  const setFromPointer = useCallback(
+    (clientX: number, clientY: number) => {
+      const el = wheelRef.current;
+      if (!el) return;
+      const rect = el.getBoundingClientRect();
+      const cx = rect.left + rect.width / 2;
+      const cy = rect.top + rect.height / 2;
+      const dx = clientX - cx;
+      const dy = clientY - cy;
+      const dist = Math.min(Math.sqrt(dx * dx + dy * dy), WHEEL_RADIUS);
+      let angle = (Math.atan2(dy, dx) * 180) / Math.PI;
+      angle = (angle + 360) % 360;
+      const newS = dist / WHEEL_RADIUS;
+      onChange(hslToHex(angle, newS, l));
+    },
+    [l, onChange]
+  );
+
+  const handlePointerDown = (e: ReactPointerEvent<HTMLDivElement>) => {
+    draggingRef.current = true;
+    (e.target as HTMLElement).setPointerCapture(e.pointerId);
+    setFromPointer(e.clientX, e.clientY);
+  };
+  const handlePointerMove = (e: ReactPointerEvent<HTMLDivElement>) => {
+    if (!draggingRef.current) return;
+    setFromPointer(e.clientX, e.clientY);
+  };
+  const handlePointerUp = (e: ReactPointerEvent<HTMLDivElement>) => {
+    draggingRef.current = false;
+    try {
+      (e.target as HTMLElement).releasePointerCapture(e.pointerId);
+    } catch {
+      /* pointer may already be released */
+    }
+  };
+
+  const markerX = WHEEL_RADIUS + Math.cos((h * Math.PI) / 180) * s * WHEEL_RADIUS;
+  const markerY = WHEEL_RADIUS + Math.sin((h * Math.PI) / 180) * s * WHEEL_RADIUS;
+
+  return (
+    <div className="flex flex-col gap-3">
+      <div className="flex items-center justify-between">
+        <span className="font-mono text-[10.5px] uppercase tracking-wider text-stone-400">{label}</span>
+        <span
+          className="inline-flex items-center gap-1.5 rounded-full border border-stone-200 pl-1 pr-2 py-0.5 font-mono text-[10px] text-stone-500"
+        >
+          <span className="w-3.5 h-3.5 rounded-full border border-black/10" style={{ background: value }} />
+          {value}
+        </span>
+      </div>
+
+      <div className="flex items-center gap-4">
+        <div
+          ref={wheelRef}
+          onPointerDown={handlePointerDown}
+          onPointerMove={handlePointerMove}
+          onPointerUp={handlePointerUp}
+          className="relative rounded-full cursor-crosshair shrink-0 touch-none select-none"
+          style={{
+            width: WHEEL_SIZE,
+            height: WHEEL_SIZE,
+            background:
+              "radial-gradient(circle at center, #fff 0%, rgba(255,255,255,0) 62%), conic-gradient(from 0deg, red, yellow, lime, cyan, blue, magenta, red)",
+            boxShadow: "inset 0 0 0 1px rgba(0,0,0,0.08), 0 1px 3px rgba(0,0,0,0.08)",
+          }}
+        >
+          <div
+            className="absolute w-4 h-4 rounded-full border-2 border-white shadow-[0_0_0_1px_rgba(0,0,0,0.35)] pointer-events-none -translate-x-1/2 -translate-y-1/2"
+            style={{ left: markerX, top: markerY, background: value }}
+          />
+        </div>
+
+        <div className="flex-1 flex flex-col gap-2.5">
+          <label className="flex flex-col gap-1">
+            <span className="font-mono text-[9.5px] uppercase tracking-wider text-stone-400">Lightness</span>
+            <input
+              type="range"
+              min={0}
+              max={100}
+              value={Math.round(l * 100)}
+              onChange={(e) => onChange(hslToHex(h, s, Number(e.target.value) / 100))}
+              className="w-full accent-amber-600"
+            />
+          </label>
+          <input
+            type="color"
+            value={value}
+            onChange={(e) => onChange(e.target.value.toUpperCase())}
+            className="w-full h-8 rounded-[8px] border border-stone-200 cursor-pointer bg-transparent"
+            aria-label={`${label} exact color`}
+          />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-8 gap-1.5">
+        {PRESET_COLORS.map((c) => (
+          <button
+            key={c.name}
+            title={c.name}
+            onClick={() => onChange(c.hex)}
+            className={`w-full aspect-square rounded-full border transition-transform hover:scale-110 ${
+              value.toUpperCase() === c.hex.toUpperCase() ? "ring-2 ring-offset-1 ring-amber-500" : "border-black/10"
+            }`}
+            style={{ background: c.hex }}
+          />
+        ))}
+      </div>
+    </div>
+  );
+};
+
+/* ---------------------------------------------------------
+   MAIN COMPONENT
+--------------------------------------------------------- */
+
 export default function VisitingCardGenerator() {
   const [data, setData] = useState<CardData>(DEFAULT_DATA);
   const [themeId, setThemeId] = useState<string>(THEMES[0].id);
+  const [customColors, setCustomColors] = useState<CustomColors>(DEFAULT_CUSTOM);
   const [flipped, setFlipped] = useState<boolean>(false);
   const [copied, setCopied] = useState<boolean>(false);
+  const [saveState, setSaveState] = useState<"idle" | "saved" | "error">("idle");
+  const [storageLoaded, setStorageLoaded] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
-  const theme = useMemo<Theme>(() => THEMES.find((t) => t.id === themeId) ?? THEMES[0], [themeId]);
+  const isCustom = themeId === CUSTOM_ID;
+  const theme = useMemo<Theme | null>(() => THEMES.find((t) => t.id === themeId) ?? null, [themeId]);
+
+  // Load any previously-saved custom palette on mount.
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        // @ts-ignore - window.storage is injected by the artifact host
+        const res = await window.storage?.get(STORAGE_KEY, false);
+        if (!cancelled && res?.value) {
+          const parsed = JSON.parse(res.value);
+          if (parsed?.bg && parsed?.text) setCustomColors(parsed);
+        }
+      } catch {
+        /* no saved palette yet — keep defaults */
+      } finally {
+        if (!cancelled) setStorageLoaded(true);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const update =
     (key: keyof CardData) =>
     (e: ChangeEvent<HTMLInputElement>) =>
       setData((d) => ({ ...d, [key]: e.target.value }));
+
+  const saveCustomPalette = async () => {
+    try {
+      // @ts-ignore
+      const res = await window.storage?.set(STORAGE_KEY, JSON.stringify(customColors), false);
+      setSaveState(res ? "saved" : "error");
+    } catch {
+      setSaveState("error");
+    }
+    setTimeout(() => setSaveState("idle"), 1800);
+  };
 
   const downloadPNG = () => {
     const w = 1050;
@@ -934,10 +1312,14 @@ export default function VisitingCardGenerator() {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
     ctx.clearRect(0, 0, w, h);
-    theme.draw(ctx, data, w, h);
+    if (isCustom) {
+      drawCustom(ctx, data, w, h, customColors);
+    } else if (theme) {
+      theme.draw(ctx, data, w, h);
+    }
 
     const link = document.createElement("a");
-    link.download = `${(data.name || "visiting-card").replace(/\s+/g, "-").toLowerCase()}-${theme.id}.png`;
+    link.download = `${(data.name || "visiting-card").replace(/\s+/g, "-").toLowerCase()}-${themeId}.png`;
     link.href = canvas.toDataURL("image/png");
     link.click();
   };
@@ -1008,6 +1390,8 @@ export default function VisitingCardGenerator() {
         @supports not (width: 1cqw) {
           .card-face-scaler { position: static; width: 100%; height: 100%; transform: none; }
         }
+        input[type="color"]::-webkit-color-swatch-wrapper { padding: 3px; }
+        input[type="color"]::-webkit-color-swatch { border-radius: 6px; border: none; }
       `}</style>
 
       <div className="max-w-[1180px] mx-auto px-4 sm:px-6 py-6 sm:py-10 font-body">
@@ -1019,12 +1403,12 @@ export default function VisitingCardGenerator() {
               Card studio
             </div>
             <h1 className="font-display font-bold text-[26px] sm:text-[32px] tracking-tight">Visiting card generator</h1>
-            <p className="text-[13.5px] text-stone-500 mt-1">Fill in your details, pick a theme, export print-ready.</p>
+            <p className="text-[13.5px] text-stone-500 mt-1">Fill in your details, pick a theme or mix your own colors, and export print-ready.</p>
           </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-[380px_1fr] gap-6 items-start">
-          {/* LEFT: form + themes */}
+          {/* LEFT: form + themes + colors */}
           <div className="space-y-5">
             <div className="bg-white border border-stone-200 rounded-[16px] overflow-hidden shadow-[0_8px_30px_rgb(0,0,0,0.02)]">
               <div className="border-b border-dashed border-stone-200 bg-stone-50 px-4 sm:px-5 py-3 sm:py-3.5 flex items-center justify-between">
@@ -1059,10 +1443,15 @@ export default function VisitingCardGenerator() {
                     <button
                       key={t.id}
                       onClick={() => setThemeId(t.id)}
-                      className={`group flex flex-col items-center gap-1.5 rounded-[10px] p-1.5 transition-all ${
+                      className={`group relative flex flex-col items-center gap-1.5 rounded-[10px] p-1.5 transition-all ${
                         active ? "ring-2 ring-amber-400 ring-offset-2 ring-offset-white" : ""
                       }`}
                     >
+                      {t.recommended && (
+                        <span className="absolute -top-1.5 -right-1 z-10 inline-flex items-center gap-0.5 rounded-full bg-amber-500 text-white px-1.5 py-[1px] text-[8.5px] font-mono font-semibold shadow">
+                          <Star className="h-2.5 w-2.5 fill-white" /> Best
+                        </span>
+                      )}
                       <div
                         className="w-full aspect-[1.75] rounded-[8px] border border-stone-200 relative overflow-hidden"
                         style={{ background: t.swatch }}
@@ -1079,8 +1468,78 @@ export default function VisitingCardGenerator() {
                     </button>
                   );
                 })}
+
+                {/* Custom colors tile */}
+                <button
+                  onClick={() => setThemeId(CUSTOM_ID)}
+                  className={`group flex flex-col items-center gap-1.5 rounded-[10px] p-1.5 transition-all ${
+                    isCustom ? "ring-2 ring-amber-400 ring-offset-2 ring-offset-white" : ""
+                  }`}
+                >
+                  <div
+                    className="w-full aspect-[1.75] rounded-[8px] border border-stone-200 relative overflow-hidden flex items-center justify-center"
+                    style={{
+                      background:
+                        "conic-gradient(from 0deg, red, yellow, lime, cyan, blue, magenta, red)",
+                    }}
+                  >
+                    <div className="absolute inset-0 flex items-center justify-center bg-black/10">
+                      <Palette className="h-4 w-4 text-white drop-shadow" />
+                    </div>
+                    {isCustom && (
+                      <div className="absolute inset-0 flex items-center justify-center bg-black/20">
+                        <Check className="h-4 w-4 text-white drop-shadow" />
+                      </div>
+                    )}
+                  </div>
+                  <span className="font-mono text-[9.5px] text-stone-500 group-hover:text-stone-800 text-center leading-tight">
+                    Custom colors
+                  </span>
+                </button>
               </div>
             </div>
+
+            {/* Custom color-wheel panel — only shown once "Custom colors" is selected */}
+            {isCustom && (
+              <div className="bg-white border border-stone-200 rounded-[16px] overflow-hidden shadow-[0_8px_30px_rgb(0,0,0,0.02)]">
+                <div className="border-b border-dashed border-stone-200 bg-stone-50 px-4 sm:px-5 py-3 sm:py-3.5 flex items-center justify-between">
+                  <span className="font-mono text-[11px] tracking-wider uppercase text-stone-500 flex items-center gap-1.5">
+                    <Sparkles className="h-3.5 w-3.5 text-amber-500" /> Pick your colors
+                  </span>
+                  <button
+                    onClick={() => setCustomColors({ ...customColors, text: readableTextFor(customColors.bg) })}
+                    className="font-mono text-[10px] text-stone-400 hover:text-stone-700 underline decoration-dotted underline-offset-2"
+                  >
+                    auto-contrast text
+                  </button>
+                </div>
+                <div className="p-4 sm:p-5 space-y-6">
+                  <ColorWheel
+                    label="Card background"
+                    value={customColors.bg}
+                    onChange={(hex) => setCustomColors((c) => ({ ...c, bg: hex }))}
+                  />
+                  <div className="h-px bg-stone-100" />
+                  <ColorWheel
+                    label="Text color"
+                    value={customColors.text}
+                    onChange={(hex) => setCustomColors((c) => ({ ...c, text: hex }))}
+                  />
+
+                  <button
+                    onClick={saveCustomPalette}
+                    disabled={!storageLoaded}
+                    className="w-full inline-flex items-center justify-center gap-1.5 rounded-[10px] bg-stone-900 text-white px-4 py-2.5 text-[13px] font-medium hover:bg-stone-800 active:bg-stone-700 transition-colors disabled:opacity-50"
+                  >
+                    {saveState === "saved" ? <Check className="h-4 w-4 text-emerald-400" /> : <Save className="h-4 w-4" />}
+                    {saveState === "saved" ? "Palette saved" : saveState === "error" ? "Couldn't save — try again" : "Save this palette"}
+                  </button>
+                  <p className="font-mono text-[9.5px] text-stone-400 -mt-3.5">
+                    Saved palettes are remembered next time you open this card studio.
+                  </p>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* RIGHT: preview + export */}
@@ -1093,12 +1552,12 @@ export default function VisitingCardGenerator() {
                 >
                   <div className="flip-face absolute inset-0 rounded-[16px] overflow-hidden shadow-[0_20px_50px_-15px_rgba(0,0,0,0.35)]">
                     <div className="card-face-scaler">
-                      <theme.Front data={data} />
+                      {isCustom ? <CustomFront data={data} colors={customColors} /> : theme && <theme.Front data={data} />}
                     </div>
                   </div>
                   <div className="flip-face flip-back absolute inset-0 rounded-[16px] overflow-hidden shadow-[0_20px_50px_-15px_rgba(0,0,0,0.35)]">
                     <div className="card-face-scaler">
-                      <theme.Back data={data} />
+                      {isCustom ? <CustomBack data={data} colors={customColors} /> : theme && <theme.Back data={data} />}
                     </div>
                   </div>
                 </div>
