@@ -564,6 +564,166 @@ const THEMES: Theme[] = [
       ctx.fillText(truncate(ctx, parts.join("     "), w - pad * 2), pad, h - 55);
     },
   },
+
+  {
+    id: "burgundy-velvet",
+    name: "Burgundy Velvet",
+    swatch: "radial-gradient(circle,#5C1023,#1A0409 70%)",
+    Front: ({ data }) => (
+      <div
+        className="relative w-full h-full flex flex-col items-center justify-center text-center p-8 overflow-hidden"
+        style={{ background: "radial-gradient(circle at 50% 30%,#4A0E1D 0%,#1A0409 70%)" }}
+      >
+        <div
+          className="w-12 h-12 rounded-full flex items-center justify-center font-display font-bold text-[16px] mb-3"
+          style={{ border: "1.5px solid #C9A24B", color: "#C9A24B" }}
+        >
+          {initials(data.name) || "??"}
+        </div>
+        <div className="font-display font-bold text-[24px] tracking-wide" style={{ color: "#F1E1D6" }}>
+          {data.name || "Your Name"}
+        </div>
+        <div className="h-px w-14 my-2" style={{ background: "#C9A24B" }} />
+        <div className="font-mono text-[10px] uppercase tracking-[0.25em]" style={{ color: "#C9A24B" }}>
+          {data.title || "Your Title"}{data.company ? ` · ${data.company}` : ""}
+        </div>
+        <div className="flex gap-4 mt-4 font-mono text-[9.5px]" style={{ color: "#F1E1D6AA" }}>
+          {data.phone && <span>{data.phone}</span>}
+          {data.email && <span>{data.email}</span>}
+          {data.website && <span>{data.website}</span>}
+        </div>
+      </div>
+    ),
+    Back: ({ data }) => (
+      <div
+        className="w-full h-full flex flex-col items-center justify-center gap-2"
+        style={{ background: "radial-gradient(circle at 50% 30%,#4A0E1D 0%,#1A0409 70%)" }}
+      >
+        <div className="font-display font-bold text-[30px]" style={{ color: "#C9A24B" }}>
+          {initials(data.name) || "??"}
+        </div>
+        <div className="font-mono text-[9.5px] tracking-[0.3em] uppercase" style={{ color: "#F1E1D688" }}>
+          {data.company || "Company"}
+        </div>
+      </div>
+    ),
+    draw(ctx, data, w, h) {
+      const g = ctx.createRadialGradient(w / 2, h * 0.35, 20, w / 2, h * 0.35, w * 0.6);
+      g.addColorStop(0, "#4A0E1D");
+      g.addColorStop(1, "#1A0409");
+      ctx.fillStyle = g;
+      ctx.fillRect(0, 0, w, h);
+
+      ctx.textAlign = "center";
+      ctx.strokeStyle = "#C9A24B";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(w / 2, h * 0.28, 44, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.fillStyle = "#C9A24B";
+      ctx.font = "bold 30px sans-serif";
+      ctx.textBaseline = "middle";
+      ctx.fillText(initials(data.name) || "??", w / 2, h * 0.28 + 2);
+      ctx.textBaseline = "alphabetic";
+
+      ctx.fillStyle = "#F1E1D6";
+      ctx.font = "bold 44px sans-serif";
+      ctx.fillText(data.name || "Your Name", w / 2, h * 0.52);
+
+      ctx.strokeStyle = "#C9A24B";
+      ctx.beginPath();
+      ctx.moveTo(w / 2 - 35, h * 0.58);
+      ctx.lineTo(w / 2 + 35, h * 0.58);
+      ctx.stroke();
+
+      ctx.fillStyle = "#C9A24B";
+      ctx.font = "600 18px monospace";
+      const sub = [data.title, data.company].filter(Boolean).join("  ·  ").toUpperCase();
+      ctx.fillText(truncate(ctx, sub, w - 100), w / 2, h * 0.66);
+
+      ctx.fillStyle = "rgba(241,225,214,0.7)";
+      ctx.font = "16px monospace";
+      const parts = [data.phone, data.email, data.website].filter(Boolean);
+      ctx.fillText(truncate(ctx, parts.join("     "), w - 100), w / 2, h * 0.82);
+      ctx.textAlign = "left";
+    },
+  },
+
+  {
+    id: "forest-canopy",
+    name: "Forest Canopy",
+    swatch: "linear-gradient(115deg,#F3EFE2 45%,#153A28 45%)",
+    Front: ({ data }) => (
+      <div className="relative w-full h-full overflow-hidden">
+        <div className="absolute inset-0" style={{ background: "#F3EFE2" }} />
+        <div
+          className="absolute inset-0"
+          style={{
+            background: "#153A28",
+            clipPath: "polygon(0 0, 62% 0, 42% 100%, 0 100%)",
+          }}
+        />
+        <div className="relative z-10 w-full h-full flex flex-col justify-between p-7">
+          <div className="font-mono text-[10px] tracking-[0.2em] uppercase text-white/80">
+            {data.company || "Company"}
+          </div>
+          <div>
+            <div className="font-display font-bold text-[25px] leading-tight text-white">{data.name || "Your Name"}</div>
+            <div className="font-mono text-[10.5px] uppercase tracking-[0.1em] mt-1" style={{ color: "#C9A24B" }}>
+              {data.title || "Your Title"}
+            </div>
+          </div>
+        </div>
+        <div className="absolute bottom-6 right-7 z-10 flex flex-col items-end gap-1 font-mono text-[10px]" style={{ color: "#153A28" }}>
+          {data.phone && <span>{data.phone}</span>}
+          {data.email && <span>{data.email}</span>}
+          {data.website && <span>{data.website}</span>}
+        </div>
+      </div>
+    ),
+    Back: ({ data }) => (
+      <div className="relative w-full h-full overflow-hidden flex items-center justify-center">
+        <div className="absolute inset-0" style={{ background: "#F3EFE2" }} />
+        <div
+          className="absolute inset-0"
+          style={{ background: "#153A28", clipPath: "polygon(0 0, 62% 0, 42% 100%, 0 100%)" }}
+        />
+        <div className="relative z-10 font-display font-bold text-[30px] text-white">{initials(data.name) || "??"}</div>
+      </div>
+    ),
+    draw(ctx, data, w, h) {
+      ctx.fillStyle = "#F3EFE2";
+      ctx.fillRect(0, 0, w, h);
+      ctx.fillStyle = "#153A28";
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.lineTo(w * 0.62, 0);
+      ctx.lineTo(w * 0.42, h);
+      ctx.lineTo(0, h);
+      ctx.closePath();
+      ctx.fill();
+
+      const pad = 55;
+      ctx.fillStyle = "rgba(255,255,255,0.85)";
+      ctx.font = "600 18px monospace";
+      ctx.fillText(truncate(ctx, (data.company || "Company").toUpperCase(), 420), pad, pad + 12);
+
+      ctx.fillStyle = "#FFFFFF";
+      ctx.font = "bold 46px sans-serif";
+      ctx.fillText(data.name || "Your Name", pad, h * 0.5);
+
+      ctx.fillStyle = "#C9A24B";
+      ctx.font = "600 20px monospace";
+      ctx.fillText((data.title || "Your Title").toUpperCase(), pad, h * 0.5 + 40);
+
+      ctx.textAlign = "right";
+      ctx.fillStyle = "#153A28";
+      ctx.font = "18px monospace";
+      const parts = [data.phone, data.email, data.website].filter(Boolean);
+      parts.forEach((p, i) => ctx.fillText(p, w - pad, h - 60 - i * 26));
+      ctx.textAlign = "left";
+    },
+  },
 ];
 
 const FIELDS: FieldConfig[] = [
