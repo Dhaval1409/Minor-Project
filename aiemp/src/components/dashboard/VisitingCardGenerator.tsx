@@ -724,6 +724,124 @@ const THEMES: Theme[] = [
       ctx.textAlign = "left";
     },
   },
+
+  {
+    id: "forest-silver",
+    name: "Forest Silver",
+    swatch: "linear-gradient(135deg,#0B2818,#123722 60%,#B8BEC4)",
+    Front: ({ data }) => (
+      <div
+        className="relative w-full h-full flex flex-col justify-between p-8 overflow-hidden"
+        style={{ background: "linear-gradient(135deg,#0B2818 0%,#132E20 100%)" }}
+      >
+        <div
+          className="absolute -right-10 -top-10 w-40 h-40 rounded-full opacity-20"
+          style={{ background: "radial-gradient(circle,#C4C9CE,transparent 70%)" }}
+        />
+        <div className="flex items-center justify-between relative z-10">
+          <div
+            className="w-11 h-11 rounded-full flex items-center justify-center font-display font-bold text-[15px]"
+            style={{ background: "#C4C9CE", color: "#0B2818" }}
+          >
+            {initials(data.name) || "??"}
+          </div>
+          <span className="font-mono text-[10px] tracking-[0.15em] uppercase" style={{ color: "#C4C9CE" }}>
+            {data.company || "Company"}
+          </span>
+        </div>
+        <div className="relative z-10">
+          <div className="font-display font-bold text-[26px] leading-tight text-white">{data.name || "Your Name"}</div>
+          <div className="font-mono text-[11px] tracking-[0.1em] uppercase mt-1" style={{ color: "#C4C9CE" }}>
+            {data.title || "Your Title"}
+          </div>
+          <div className="h-px w-full my-3" style={{ background: "rgba(196,201,206,0.25)" }} />
+          <div className="flex flex-wrap gap-x-5 gap-y-1 font-mono text-[10.5px] text-white/70">
+            {data.phone && (
+              <span className="inline-flex items-center gap-1.5">
+                <Phone className="h-3 w-3" /> {data.phone}
+              </span>
+            )}
+            {data.email && (
+              <span className="inline-flex items-center gap-1.5">
+                <Mail className="h-3 w-3" /> {data.email}
+              </span>
+            )}
+            {data.website && (
+              <span className="inline-flex items-center gap-1.5">
+                <Globe className="h-3 w-3" /> {data.website}
+              </span>
+            )}
+          </div>
+        </div>
+      </div>
+    ),
+    Back: ({ data }) => (
+      <div
+        className="w-full h-full flex flex-col items-center justify-center gap-3"
+        style={{ background: "linear-gradient(135deg,#0B2818 0%,#132E20 100%)" }}
+      >
+        <div
+          className="w-16 h-16 rounded-full flex items-center justify-center font-display font-bold text-[24px]"
+          style={{ background: "#C4C9CE", color: "#0B2818" }}
+        >
+          {initials(data.name) || "??"}
+        </div>
+        <div className="font-mono text-[10px] tracking-[0.25em] uppercase text-white/50">
+          {data.company || "Company"}
+        </div>
+      </div>
+    ),
+    draw(ctx, data, w, h) {
+      const g = ctx.createLinearGradient(0, 0, w, h);
+      g.addColorStop(0, "#0B2818");
+      g.addColorStop(1, "#132E20");
+      ctx.fillStyle = g;
+      ctx.fillRect(0, 0, w, h);
+
+      const glow = ctx.createRadialGradient(w - 60, 40, 10, w - 60, 40, 220);
+      glow.addColorStop(0, "rgba(196,201,206,0.22)");
+      glow.addColorStop(1, "rgba(196,201,206,0)");
+      ctx.fillStyle = glow;
+      ctx.fillRect(0, 0, w, h);
+
+      const pad = 60;
+      ctx.fillStyle = "#C4C9CE";
+      ctx.beginPath();
+      ctx.arc(pad + 34, pad + 30, 34, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = "#0B2818";
+      ctx.font = "bold 30px sans-serif";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText(initials(data.name) || "??", pad + 34, pad + 32);
+
+      ctx.textAlign = "right";
+      ctx.fillStyle = "#C4C9CE";
+      ctx.font = "600 20px monospace";
+      ctx.fillText(truncate(ctx, (data.company || "Company").toUpperCase(), 420), w - pad, pad + 38);
+
+      ctx.textAlign = "left";
+      ctx.fillStyle = "#FFFFFF";
+      ctx.font = "bold 54px sans-serif";
+      ctx.fillText(data.name || "Your Name", pad, h - 190);
+
+      ctx.fillStyle = "#C4C9CE";
+      ctx.font = "600 22px monospace";
+      ctx.fillText((data.title || "Your Title").toUpperCase(), pad, h - 150);
+
+      ctx.strokeStyle = "rgba(196,201,206,0.25)";
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(pad, h - 120);
+      ctx.lineTo(w - pad, h - 120);
+      ctx.stroke();
+
+      ctx.fillStyle = "rgba(255,255,255,0.7)";
+      ctx.font = "20px monospace";
+      const parts = [data.phone, data.email, data.website].filter(Boolean);
+      ctx.fillText(truncate(ctx, parts.join("     "), w - pad * 2), pad, h - 80);
+    },
+  },
 ];
 
 const FIELDS: FieldConfig[] = [
@@ -970,7 +1088,7 @@ export default function VisitingCardGenerator() {
                   className="inline-flex w-full sm:w-auto items-center justify-center gap-1.5 rounded-[10px] bg-stone-900 text-white px-4 py-2.5 text-[13px] font-medium hover:bg-stone-800 active:bg-stone-700 transition-colors"
                 >
                   <Download className="h-4 w-4" />
-                  Download Png
+                  Download PNG
                 </button>
               </div>
             </div>
