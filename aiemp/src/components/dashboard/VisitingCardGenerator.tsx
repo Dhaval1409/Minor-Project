@@ -970,7 +970,7 @@ export default function VisitingCardGenerator() {
                   className="inline-flex w-full sm:w-auto items-center justify-center gap-1.5 rounded-[10px] bg-stone-900 text-white px-4 py-2.5 text-[13px] font-medium hover:bg-stone-800 active:bg-stone-700 transition-colors"
                 >
                   <Download className="h-4 w-4" />
-                  Download PNG
+                  Download Png
                 </button>
               </div>
             </div>
