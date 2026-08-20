@@ -44,6 +44,7 @@ type Business = {
   logo: string;
   featured: boolean;
   verified: boolean;
+  createdAt?: string;
 };
 
 const CATEGORIES = [
@@ -73,154 +74,34 @@ const img = (seed: string) => `https://picsum.photos/seed/${seed}/800/600`;
 const logo = (name: string, bg: string) =>
   `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=${bg}&color=fff&bold=true&size=128`;
 
-const BUSINESSES: Business[] = [
-  {
-    id: '1', name: 'Luxe Hair Studio', slug: 'luxe-hair-studio', category: 'Salon',
-    location: 'Ahmedabad, Gujarat', owner: 'Priya Mehta',
-    description: 'Premium hair care and styling studio blending modern technique with a relaxed, boutique feel.',
-    rating: 4.9, reviewCount: 328,
-    services: ['Haircut', 'Hair Coloring', 'Hair Spa', 'Styling'],
-    image: img('luxe-hair'), logo: logo('Luxe Hair Studio', 'C24A3B'),
-    featured: true, verified: true,
-  },
-  {
-    id: '2', name: 'Glow & Grace Salon', slug: 'glow-and-grace-salon', category: 'Salon',
-    location: 'Vadodara, Gujarat', owner: 'Anita Shah',
-    description: 'A calm, light-filled salon focused on skin and hair wellness for the everyday routine.',
-    rating: 4.7, reviewCount: 176,
-    services: ['Facial', 'Haircut', 'Bridal Makeup'],
-    image: img('glow-grace'), logo: logo('Glow Grace', 'D98E2B'),
-    featured: false, verified: true,
-  },
-  {
-    id: '3', name: 'Urban Barber', slug: 'urban-barber', category: 'Barber',
-    location: 'Gandhinagar, Gujarat', owner: 'Rakesh Patel',
-    description: 'Classic barbershop energy with sharp modern fades and a proper hot-towel finish.',
-    rating: 4.8, reviewCount: 214,
-    services: ['Haircut', 'Beard Styling', 'Hair Treatment'],
-    image: img('urban-barber'), logo: logo('Urban Barber', '1F8A70'),
-    featured: true, verified: true,
-  },
-  {
-    id: '4', name: "The Gentlemen's Cut", slug: 'the-gentlemens-cut', category: 'Barber',
-    location: 'Rajkot, Gujarat', owner: 'Sanjay Rao',
-    description: 'Appointment-only grooming lounge for precision cuts and traditional shaves.',
-    rating: 4.6, reviewCount: 132,
-    services: ['Haircut', 'Shave', 'Beard Trim'],
-    image: img('gentlemens-cut'), logo: logo('Gentlemens Cut', '12172B'),
-    featured: false, verified: false,
-  },
-  {
-    id: '5', name: 'PowerFit Arena', slug: 'powerfit-arena', category: 'Gym',
-    location: 'Surat, Gujarat', owner: 'Vikram Desai',
-    description: 'Full-scale strength and conditioning facility with certified trainers on the floor daily.',
-    rating: 4.9, reviewCount: 512,
-    services: ['Gym Membership', 'Personal Training', 'CrossFit', 'Fitness Classes'],
-    image: img('powerfit-arena'), logo: logo('PowerFit Arena', 'C24A3B'),
-    featured: true, verified: true,
-  },
-  {
-    id: '6', name: 'Iron Pulse Fitness', slug: 'iron-pulse-fitness', category: 'Gym',
-    location: 'Ahmedabad, Gujarat', owner: 'Karan Joshi',
-    description: 'Boutique strength studio with small-group coaching and a serious lifting culture.',
-    rating: 4.7, reviewCount: 289,
-    services: ['Strength Training', 'Nutrition Coaching', 'Group Classes'],
-    image: img('iron-pulse'), logo: logo('Iron Pulse', 'D98E2B'),
-    featured: false, verified: true,
-  },
-  {
-    id: '7', name: 'Serenity Day Spa', slug: 'serenity-day-spa', category: 'Spa',
-    location: 'Ahmedabad, Gujarat', owner: 'Meera Kapoor',
-    description: 'A quiet retreat for massage, skin therapy, and slow, deliberate self-care.',
-    rating: 4.8, reviewCount: 241,
-    services: ['Full Body Massage', 'Aromatherapy', 'Skin Therapy'],
-    image: img('serenity-spa'), logo: logo('Serenity Spa', '1F8A70'),
-    featured: false, verified: true,
-  },
-  {
-    id: '8', name: 'Bliss Wellness Spa', slug: 'bliss-wellness-spa', category: 'Spa',
-    location: 'Vadodara, Gujarat', owner: 'Nisha Trivedi',
-    description: 'Holistic wellness spa offering therapeutic treatments in a warm, private setting.',
-    rating: 4.6, reviewCount: 157,
-    services: ['Deep Tissue Massage', 'Body Scrub', 'Reflexology'],
-    image: img('bliss-wellness'), logo: logo('Bliss Wellness', 'C24A3B'),
-    featured: false, verified: false,
-  },
-  {
-    id: '9', name: 'Spice Route Kitchen', slug: 'spice-route-kitchen', category: 'Restaurant',
-    location: 'Surat, Gujarat', owner: 'Rohan Bhatt',
-    description: 'Contemporary Indian dining built around regional spice blends and open-flame cooking.',
-    rating: 4.7, reviewCount: 402,
-    services: ['Dine-in', 'Catering', 'Private Events'],
-    image: img('spice-route'), logo: logo('Spice Route', 'D98E2B'),
-    featured: true, verified: true,
-  },
-  {
-    id: '10', name: 'Copper Leaf Dining', slug: 'copper-leaf-dining', category: 'Restaurant',
-    location: 'Gandhinagar, Gujarat', owner: 'Aman Verma',
-    description: 'Farm-to-table plates in a warm, plant-lined dining room built for long evenings.',
-    rating: 4.5, reviewCount: 198,
-    services: ['Dine-in', 'Takeaway', 'Chef Specials'],
-    image: img('copper-leaf'), logo: logo('Copper Leaf', '1F8A70'),
-    featured: false, verified: true,
-  },
-  {
-    id: '11', name: 'Bean & Brew Café', slug: 'bean-and-brew-cafe', category: 'Cafe',
-    location: 'Ahmedabad, Gujarat', owner: 'Divya Nair',
-    description: 'Neighbourhood café built around single-origin coffee and slow mornings.',
-    rating: 4.8, reviewCount: 265,
-    services: ['Coffee', 'All-Day Breakfast', 'Workspace Seating'],
-    image: img('bean-brew'), logo: logo('Bean Brew', 'C24A3B'),
-    featured: false, verified: true,
-  },
-  {
-    id: '12', name: 'The Daily Grind Café', slug: 'the-daily-grind-cafe', category: 'Cafe',
-    location: 'Rajkot, Gujarat', owner: 'Yash Solanki',
-    description: 'Compact specialty café known for its cold brew and quiet corner tables.',
-    rating: 4.4, reviewCount: 121,
-    services: ['Coffee', 'Pastries', 'Takeaway'],
-    image: img('daily-grind'), logo: logo('Daily Grind', 'D98E2B'),
-    featured: false, verified: false,
-  },
-  {
-    id: '13', name: 'SmileCare Dental Clinic', slug: 'smilecare-dental-clinic', category: 'Clinic',
-    location: 'Vadodara, Gujarat', owner: 'Dr. Kavita Iyer',
-    description: 'Modern dental practice offering preventive and cosmetic care for the whole family.',
-    rating: 4.9, reviewCount: 347,
-    services: ['General Checkup', 'Teeth Whitening', 'Orthodontics'],
-    image: img('smilecare'), logo: logo('SmileCare', '1F8A70'),
-    featured: true, verified: true,
-  },
-  {
-    id: '14', name: 'Vitality Skin Clinic', slug: 'vitality-skin-clinic', category: 'Clinic',
-    location: 'Surat, Gujarat', owner: 'Dr. Arjun Mehta',
-    description: 'Dermatology clinic pairing clinical treatments with long-term skin health plans.',
-    rating: 4.7, reviewCount: 188,
-    services: ['Skin Consultation', 'Acne Treatment', 'Laser Therapy'],
-    image: img('vitality-skin'), logo: logo('Vitality Skin', 'C24A3B'),
-    featured: false, verified: true,
-  },
-  {
-    id: '15', name: 'Frame & Focus Photography', slug: 'frame-and-focus-photography', category: 'Studio',
-    location: 'Ahmedabad, Gujarat', owner: 'Neha Kulkarni',
-    description: 'Full-service photo and video studio for portraits, brands, and events.',
-    rating: 4.8, reviewCount: 143,
-    services: ['Portrait Shoot', 'Event Photography', 'Video Production'],
-    image: img('frame-focus'), logo: logo('Frame Focus', 'D98E2B'),
-    featured: false, verified: true,
-  },
-  {
-    id: '16', name: 'Rhythm Dance Studio', slug: 'rhythm-dance-studio', category: 'Studio',
-    location: 'Gandhinagar, Gujarat', owner: 'Simran Chawla',
-    description: 'High-energy dance studio running classes across styles for every skill level.',
-    rating: 4.6, reviewCount: 209,
-    services: ['Group Classes', 'Private Lessons', 'Kids Batches'],
-    image: img('rhythm-dance'), logo: logo('Rhythm Dance', '1F8A70'),
-    featured: false, verified: false,
-  },
-];
+function mapApiBusiness(raw: any): Business {
+  const activeServiceNames = Array.isArray(raw.services)
+    ? raw.services.filter((s: any) => s?.active !== false).map((s: any) => s.name).filter(Boolean)
+    : [];
+  const legacyServiceNames = Array.isArray(raw.servicesProvided) ? raw.servicesProvided : [];
 
-const ALL_SERVICES = Array.from(new Set(BUSINESSES.flatMap((b) => b.services))).sort();
+  return {
+    id: String(raw._id ?? raw.id ?? ''),
+    name: raw.name || 'Unnamed Business',
+    slug: raw.slug || '',
+    category: raw.businessType || 'Studio',
+    location: raw.city || 'Location not set yet',
+    owner: raw.ownerName || '',
+    description: raw.description || '',
+    rating: typeof raw.rating === 'number' ? raw.rating : 0,
+    reviewCount: typeof raw.reviewCount === 'number' ? raw.reviewCount : 0,
+    services: activeServiceNames.length ? activeServiceNames : legacyServiceNames,
+    // No photo-upload feature yet, so this stays blank until the owner adds
+    // a real photo via the backend. The UI shows a "No photo yet" placeholder
+    // instead of a fake stock image.
+    image: raw.image || '',
+    // Initials avatar is a neutral placeholder, not a fake business photo.
+    logo: raw.logo || logo(raw.name || 'Business', 'C24A3B'),
+    featured: !!raw.featured,
+    verified: !!raw.verified,
+    createdAt: raw.createdAt,
+  };
+}
 
 const CATEGORY_ICONS: Record<string, typeof Sparkles> = {
   Salon: Sparkles, Barber: Scissors, Gym: Dumbbell, Spa: Flower2,
@@ -298,15 +179,24 @@ function BusinessCard({ business, index }: { business: Business; index: number }
     >
       {/* Cover */}
       <div className="relative aspect-[4/3] sm:aspect-[16/10] overflow-hidden bg-paper-dim">
-        {!imgLoaded && <div className="absolute inset-0 shimmer" />}
-        <img
-          src={business.image}
-          alt={business.name}
-          loading="lazy"
-          onLoad={() => setImgLoaded(true)}
-          className={`w-full h-full object-cover motion-safe:transition-all motion-safe:duration-700 ease-out
-            group-hover:scale-[1.08] ${imgLoaded ? 'opacity-100' : 'opacity-0'}`}
-        />
+        {business.image ? (
+          <>
+            {!imgLoaded && <div className="absolute inset-0 shimmer" />}
+            <img
+              src={business.image}
+              alt={business.name}
+              loading="lazy"
+              onLoad={() => setImgLoaded(true)}
+              className={`w-full h-full object-cover motion-safe:transition-all motion-safe:duration-700 ease-out
+                group-hover:scale-[1.08] ${imgLoaded ? 'opacity-100' : 'opacity-0'}`}
+            />
+          </>
+        ) : (
+          <div className="w-full h-full flex flex-col items-center justify-center gap-1.5 text-text-on-paper-dim">
+            <CatIcon className="w-7 h-7" />
+            <span className="text-[11px] font-medium">No photo yet</span>
+          </div>
+        )}
         <div className="absolute inset-0 bg-gradient-to-t from-ink/70 via-ink/5 to-transparent" />
 
         <div className="absolute top-3 left-3 flex gap-2">
@@ -374,7 +264,7 @@ function BusinessCard({ business, index }: { business: Business; index: number }
         </div>
 
         <Link
-          href={`/pocustomer/${business.slug}`}
+          href={`/pocustomer/${business.id}`}
           className="flex items-center justify-between text-[14px] font-semibold text-ink group/link rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald focus-visible:ring-offset-2"
         >
           View Profile
@@ -420,11 +310,13 @@ function FilterDrawer({
   onClose,
   filters,
   setFilters,
+  allServices,
 }: {
   open: boolean;
   onClose: () => void;
   filters: Filters;
   setFilters: (f: Filters) => void;
+  allServices: string[];
 }) {
   const toggle = (list: string[], value: string) =>
     list.includes(value) ? list.filter((v) => v !== value) : [...list, value];
@@ -512,7 +404,7 @@ function FilterDrawer({
           <div>
             <p className="text-[13px] font-semibold text-ink mb-3">Services</p>
             <div className="flex flex-wrap gap-2">
-              {ALL_SERVICES.map((s) => (
+              {allServices.map((s) => (
                 <button
                   key={s}
                   onClick={() => setFilters({ ...filters, services: toggle(filters.services, s) })}
@@ -558,7 +450,11 @@ const HERO_VIDEO_URL = 'https://res.cloudinary.com/xbicmhte/video/upload/v178663
 const MOBILE_HERO_VIDEO_URL = 'https://res.cloudinary.com/xbicmhte/video/upload/v1786637614/a6fa91a9bb1e7440cfde97943fcc7cfb_720w.mp4';
 
 export default function PoCustomerPage() {
+  const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5000';
+
+  const [businesses, setBusinesses] = useState<Business[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState('');
   const [search, setSearch] = useState('');
   const [activeCategory, setActiveCategory] = useState('All');
   const [sortBy, setSortBy] = useState<SortKey>('Recommended');
@@ -566,20 +462,40 @@ export default function PoCustomerPage() {
   const [drawerOpen, setDrawerOpen] = useState(false);
 
   useEffect(() => {
-    const t = setTimeout(() => setLoading(false), 600);
-    return () => clearTimeout(t);
-  }, []);
+    let cancelled = false;
 
-  const featured = useMemo(() => BUSINESSES.filter((b) => b.featured).slice(0, 4), []);
+    async function loadBusinesses() {
+      try {
+        const res = await fetch(`${API_BASE}/business`);
+        const json = await res.json();
+        if (!res.ok || !json.success) throw new Error(json.message || 'Failed to load businesses');
+        if (!cancelled) setBusinesses((json.data || []).map(mapApiBusiness));
+      } catch {
+        if (!cancelled) setLoadError('Could not load businesses right now. Please try again shortly.');
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }
+
+    loadBusinesses();
+    return () => { cancelled = true; };
+  }, [API_BASE]);
+
+  const allServices = useMemo(
+    () => Array.from(new Set(businesses.flatMap((b) => b.services))).sort(),
+    [businesses]
+  );
+
+  const featured = useMemo(() => businesses.filter((b) => b.featured).slice(0, 4), [businesses]);
 
   const categoryCounts = useMemo(() => {
     const counts: Record<string, number> = {};
-    BUSINESSES.forEach((b) => { counts[b.category] = (counts[b.category] ?? 0) + 1; });
+    businesses.forEach((b) => { counts[b.category] = (counts[b.category] ?? 0) + 1; });
     return counts;
-  }, []);
+  }, [businesses]);
 
   const filtered = useMemo(() => {
-    let list = BUSINESSES.filter((b) => {
+    let list = businesses.filter((b) => {
       const q = search.trim().toLowerCase();
       const matchesSearch =
         !q ||
@@ -599,11 +515,11 @@ export default function PoCustomerPage() {
     switch (sortBy) {
       case 'Highest Rated': list = [...list].sort((a, b) => b.rating - a.rating); break;
       case 'Most Popular': list = [...list].sort((a, b) => b.reviewCount - a.reviewCount); break;
-      case 'Newest': list = [...list].sort((a, b) => Number(b.id) - Number(a.id)); break;
+      case 'Newest': list = [...list].sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime()); break;
       default: list = [...list].sort((a, b) => Number(b.featured) - Number(a.featured));
     }
     return list;
-  }, [search, activeCategory, filters, sortBy]);
+  }, [businesses, search, activeCategory, filters, sortBy]);
 
   const activeFilterCount =
     filters.categories.length + filters.services.length + (filters.location ? 1 : 0) + (filters.minRating ? 1 : 0);
@@ -782,7 +698,12 @@ export default function PoCustomerPage() {
           </div>
         </Reveal>
 
-        {loading ? (
+        {loadError ? (
+          <div className="flex flex-col items-center justify-center text-center py-16 sm:py-20 px-4 border border-dashed border-ink/15 rounded-3xl">
+            <p className="font-display font-bold text-[18px] text-ink mb-1">Couldn&apos;t load businesses</p>
+            <p className="text-[14px] text-text-on-paper-dim">{loadError}</p>
+          </div>
+        ) : loading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 sm:gap-6">
             {Array.from({ length: 8 }).map((_, i) => <SkeletonCard key={i} />)}
           </div>
@@ -895,6 +816,7 @@ export default function PoCustomerPage() {
         onClose={() => setDrawerOpen(false)}
         filters={filters}
         setFilters={setFilters}
+        allServices={allServices}
       />
 
       <style jsx global>{`

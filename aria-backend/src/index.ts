@@ -13,12 +13,10 @@ import appointmentRoutes from "./routes/appointmentRoutes";
 import businessRoutes from "./routes/businessRoutes";
 import authRoutes from "./routes/authRoutes";
 import adminRoutes from "./routes/adminRoutes"; // <-- ADDED: Import admin routes
-import leadRoutes from "./routes/leadRoutes"
+import leadRoutes from "./routes/leadRoutes";
 import telegramRoutes from "./routes/telegramRoutes"; // <-- ADDED: webhook endpoint for Telegram (replaces polling on serverless)
 import { errorHandler, notFoundHandler } from "./middleware/errorHandler";
 import { initializeAllSaaS_Bots } from "./config/botManager";
-
-
 
 // Force IPv4 resolution order to avoid connection delays with local setups
 dns.setDefaultResultOrder('ipv4first');
@@ -94,18 +92,12 @@ if (process.env.NODE_ENV !== "production") {
   app.listen(PORT, async () => {
     console.log(`🚀 Aria SaaS backend listening on http://localhost:${PORT}`);
 
-    // FIX: explicitly connect to MongoDB before touching any collections.
-    // Previously, initializeAllSaaS_Bots() ran here directly and called
-    // BusinessModel.find() without the DB ever being connected — the
-    // per-request middleware below is what normally triggers connectDB(),
-    // but bot startup happens outside the request/response cycle, so it
-    // never ran. That's what caused the 10s "buffering timed out" crash.
     try {
       await connectDB();
-      console.log("✅ MongoDB connected — proceeding to bot startup.");
+      console.log("✅ MongoDB connected — proceeding to startup tasks.");
     } catch (dbError) {
-      console.error("❌ Failed to connect to MongoDB at startup. Bots will NOT be initialized:", dbError);
-      return; // Don't attempt bot startup against a dead connection
+      console.error("❌ Failed to connect to MongoDB at startup:", dbError);
+      return; 
     }
 
     try {
