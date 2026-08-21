@@ -119,11 +119,9 @@ function AuthenticatedDashboard() {
         return (
           <Settings
             business={business}
-            businessId={businessId}
             businessPhone={businessPhone}
             toggles={toggles}
             toggle={toggle}
-            onSaved={() => loadBusiness(businessId)}
           />
         );
       case 'billing': return <Billing />;

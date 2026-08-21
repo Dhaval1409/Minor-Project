@@ -149,10 +149,11 @@ export function useDashboard() {
     setGreeting(greetingForHour(new Date().getHours()));
   }, []);
 
-  return {
+    return {
     appointments,
     loadingAppts,
     apptError,
+    businessId,
     business,
     loadingBusiness,
     businessPhone,
@@ -160,9 +161,10 @@ export function useDashboard() {
     toggles,
     toggle,
     loadAppointments,
+    loadBusiness,
     handleAddAppointment,
     handleCancelAppointment,
-    handleCompleteAppointment, // ◄ ADDED: exposed so page.tsx can pass it to <Appointments onComplete=... />
+    handleCompleteAppointment,
   };
 }
 
