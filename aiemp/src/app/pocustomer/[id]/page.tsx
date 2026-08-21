@@ -59,6 +59,7 @@ type Business = {
   contactEmail?: string;
   image?: string;
   logo?: string;
+  telegramBotLink?: string;
   rating: number;
   reviewCount: number;
   featured: boolean;
@@ -164,12 +165,22 @@ export default function BusinessDetailPage() {
 
   const CatIcon = CATEGORY_ICONS[business.businessType] ?? Sparkles;
 
-  const heroImage = business.image || fallbackImg(business._id);
-  const logoImage = business.logo || fallbackLogo(business.name);
-
-  const gallery =
+  // Gallery photos (uploaded via /upload-gallery) power the hero/cover
+  // image and thumbnail strip — NOT the owner's personal profile photo.
+  const galleryImages =
     business.galleryImages && business.galleryImages.length > 0
       ? business.galleryImages
+      : [];
+
+  const heroImage = galleryImages[0] || fallbackImg(business._id);
+
+  // The small round logo next to the business name = the owner's actual
+  // uploaded profile photo (business.image), not the unused `logo` field.
+  const logoImage = business.image || fallbackLogo(business.name);
+
+  const gallery =
+    galleryImages.length > 0
+      ? galleryImages
       : [heroImage, fallbackImg(`${business._id}-2`), fallbackImg(`${business._id}-3`)];
 
   const phone = business.phone || '';
@@ -349,13 +360,21 @@ export default function BusinessDetailPage() {
               <p className="text-[13px] text-text-on-ink-dim leading-relaxed mb-5">
                 Chat with {business.name}&apos;s AI assistant on Telegram to check availability and book instantly.
               </p>
-              <a
-                href="#"
-                className="w-full inline-flex items-center justify-center gap-2 px-5 py-3 rounded-full bg-emerald text-white text-[14px] font-semibold hover:opacity-90 hover:scale-[1.02] transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-ink"
-              >
-                <Send className="w-4 h-4" />
-                Book via Telegram
-              </a>
+              {business.telegramBotLink ? (
+                <a
+                  href={business.telegramBotLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full inline-flex items-center justify-center gap-2 px-5 py-3 rounded-full bg-emerald text-white text-[14px] font-semibold hover:opacity-90 hover:scale-[1.02] transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-ink"
+                >
+                  <Send className="w-4 h-4" />
+                  Book via Telegram
+                </a>
+              ) : (
+                <p className="text-[12.5px] text-text-on-ink-dim/70 italic">
+                  Telegram booking not set up yet
+                </p>
+              )}
             </div>
           </div>
 

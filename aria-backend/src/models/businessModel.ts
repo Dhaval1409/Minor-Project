@@ -30,6 +30,7 @@ export interface IBusiness extends Document {
   services: IServiceItem[];
 
   telegramBotToken?: string;
+  telegramBotLink?: string;
   phone?: string;
 
   // Multiple business gallery images
@@ -148,6 +149,14 @@ const BusinessSchema = new Schema<IBusiness>(
       type: String,
       unique: true,
       sparse: true,
+    },
+
+    // Public-facing link customers tap on the business profile page to
+    // open a chat with the business's Telegram bot (e.g. https://t.me/your_bot)
+    telegramBotLink: {
+      type: String,
+      trim: true,
+      default: "",
     },
 
     phone: {

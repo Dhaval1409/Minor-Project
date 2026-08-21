@@ -23,6 +23,10 @@ export interface Business {
   hours?: { opens?: string; closes?: string };
   servicesProvided?: string[];
   telegramBotToken?: string;
+  image?: string;
+  logo?: string;
+  galleryImages?: string[];
+  telegramBotLink?: string;
 }
 
 export interface ActivityItem {

@@ -67,12 +67,14 @@ function AuthenticatedDashboard() {
     appointments,
     loadingAppts,
     apptError,
+    businessId,
     business,
     businessPhone,
     greeting,
     toggles,
     toggle,
     loadAppointments,
+    loadBusiness,
     handleAddAppointment,
     handleCancelAppointment,
     handleCompleteAppointment,
@@ -114,7 +116,16 @@ function AuthenticatedDashboard() {
       case 'services': return <Services />;
       case 'visiting-card': return <VisitingCardGenerator />;
       case 'settings':
-        return <Settings business={business} businessPhone={businessPhone} toggles={toggles} toggle={toggle} />;
+        return (
+          <Settings
+            business={business}
+            businessId={businessId}
+            businessPhone={businessPhone}
+            toggles={toggles}
+            toggle={toggle}
+            onSaved={() => loadBusiness(businessId)}
+          />
+        );
       case 'billing': return <Billing />;
       default:
         return (

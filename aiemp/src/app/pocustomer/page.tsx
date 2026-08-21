@@ -41,6 +41,7 @@ type Business = {
   reviewCount: number;
   services: string[];
   image: string;
+  galleryImages: string[];
   logo: string;
   featured: boolean;
   verified: boolean;
@@ -80,6 +81,10 @@ function mapApiBusiness(raw: any): Business {
     : [];
   const legacyServiceNames = Array.isArray(raw.servicesProvided) ? raw.servicesProvided : [];
 
+  // The business's gallery photos (uploaded via /upload-gallery), used to
+  // power the card's cover image — NOT the owner's personal profile photo.
+  const galleryImages: string[] = Array.isArray(raw.galleryImages) ? raw.galleryImages : [];
+
   return {
     id: String(raw._id ?? raw.id ?? ''),
     name: raw.name || 'Unnamed Business',
@@ -91,12 +96,13 @@ function mapApiBusiness(raw: any): Business {
     rating: typeof raw.rating === 'number' ? raw.rating : 0,
     reviewCount: typeof raw.reviewCount === 'number' ? raw.reviewCount : 0,
     services: activeServiceNames.length ? activeServiceNames : legacyServiceNames,
-    // No photo-upload feature yet, so this stays blank until the owner adds
-    // a real photo via the backend. The UI shows a "No photo yet" placeholder
-    // instead of a fake stock image.
-    image: raw.image || '',
-    // Initials avatar is a neutral placeholder, not a fake business photo.
-    logo: raw.logo || logo(raw.name || 'Business', 'C24A3B'),
+    // Card cover = first gallery photo. Falls back to '' (→ "No photo yet"
+    // placeholder) if the owner hasn't uploaded any gallery photos.
+    image: galleryImages[0] || '',
+    galleryImages,
+    // Small round avatar = the owner's actual uploaded profile photo
+    // (business.image). Falls back to initials only if none was uploaded.
+    logo: raw.image || logo(raw.name || 'Business', 'C24A3B'),
     featured: !!raw.featured,
     verified: !!raw.verified,
     createdAt: raw.createdAt,

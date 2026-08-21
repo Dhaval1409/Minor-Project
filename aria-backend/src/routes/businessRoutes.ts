@@ -15,7 +15,17 @@ import {
   deleteService,
   importLegacyServices,
   listBusinesses,
+  uploadProfileImage,
+  deleteProfileImage,
+  uploadGalleryImages,
+  deleteGalleryImage,
 } from "../controllers/businessController";
+
+import {
+  uploadSingleImage,
+  uploadMultipleImages,
+  withMulterErrorHandling,
+} from "../middleware/upload";
 
 const router = express.Router();
 
@@ -59,6 +69,46 @@ router.put("/:id", updateBusiness);
  * Delete business
  */
 router.delete("/:id", deleteBusiness);
+
+
+/* ============================================================
+   IMAGES (Cloudinary)
+   ============================================================ */
+
+/**
+ * POST /business/:id/upload-image
+ * multipart/form-data, field: "image"
+ * Uploads & REPLACES the profile/logo image.
+ */
+router.post(
+  "/:id/upload-image",
+  withMulterErrorHandling(uploadSingleImage),
+  uploadProfileImage
+);
+
+/**
+ * DELETE /business/:id/profile-image
+ * Removes the current profile/logo image.
+ */
+router.delete("/:id/profile-image", deleteProfileImage);
+
+/**
+ * POST /business/:id/upload-gallery
+ * multipart/form-data, field: "images" (multiple)
+ * Appends to the gallery, capped at 12. Returns the full updated array.
+ */
+router.post(
+  "/:id/upload-gallery",
+  withMulterErrorHandling(uploadMultipleImages),
+  uploadGalleryImages
+);
+
+/**
+ * DELETE /business/:id/gallery-image
+ * body: { imageUrl: string }
+ * Removes one photo from the gallery. Returns the full updated array.
+ */
+router.delete("/:id/gallery-image", deleteGalleryImage);
 
 
 /* ============================================================

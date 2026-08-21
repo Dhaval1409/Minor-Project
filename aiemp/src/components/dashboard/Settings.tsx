@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
@@ -22,6 +22,8 @@ interface SettingsProps {
   toggle: (key: ToggleKey) => void;
 }
 
+const GALLERY_LIMIT = 12;
+
 export function Settings({
   business,
   businessPhone,
@@ -31,14 +33,134 @@ export function Settings({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const galleryInputRef = useRef<HTMLInputElement>(null);
 
+  const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5000';
+
+  // Resolve the business id the same way the rest of the dashboard does —
+  // prefer the loaded business record, fall back to what was stashed at
+  // login/onboarding time.
+  const businessId =
+    (business as any)?._id ||
+    (typeof window !== 'undefined' ? localStorage.getItem('aria_business_id') : null);
+
   const [profileImage, setProfileImage] = useState<string | null>(null);
+  const [uploadingProfile, setUploadingProfile] = useState(false);
 
   // Business gallery — the photos that power the sliding image on the
   // public/customer-facing business card & profile page.
-  const initialGallery: string[] = (business as any)?.gallery ?? (business as any)?.images ?? [];
-  const [galleryImages, setGalleryImages] = useState<string[]>(initialGallery);
+  const [galleryImages, setGalleryImages] = useState<string[]>([]);
+  const [uploadingGallery, setUploadingGallery] = useState(false);
 
-  const handleGalleryUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+  // Services / offerings — editable tag list, seeded from whatever the
+  // business registered with (services / servicesProvided depending on
+  // your Business type naming).
+  const [services, setServices] = useState<string[]>([]);
+  const [newService, setNewService] = useState('');
+
+  // Telegram bot LINK — the public t.me/... link customers tap on the
+  // business profile page's "Book via Telegram" button. This is separate
+  // from the telegramBotToken (which is the private API token used by
+  // the backend to run the bot).
+  const [telegramLink, setTelegramLink] = useState('');
+  const [editingTelegramLink, setEditingTelegramLink] = useState(false);
+  const [savingTelegramLink, setSavingTelegramLink] = useState(false);
+  const [telegramLinkError, setTelegramLinkError] = useState('');
+
+  // `business` loads asynchronously (useDashboard fetches it after mount),
+  // so seed local state once it actually arrives rather than only at the
+  // first render when it's still null.
+  useEffect(() => {
+    if (!business) return;
+    setProfileImage((business as any).image || (business as any).logo || null);
+    setGalleryImages((business as any).galleryImages || []);
+    setServices(
+      (business as any).servicesProvided ?? (business as any).services ?? []
+    );
+    setTelegramLink((business as any).telegramBotLink || '');
+  }, [business]);
+
+  // ------------------------------------------------------------------
+  // Profile photo — uploads to Cloudinary via the backend, REPLACES
+  // whatever was there before (both on the server and locally), so
+  // repeated uploads never pile up.
+  // ------------------------------------------------------------------
+  const handleImageUpload = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      alert('Please select an image file.');
+      if (fileInputRef.current) fileInputRef.current.value = '';
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      alert('Image size must be less than 5MB.');
+      if (fileInputRef.current) fileInputRef.current.value = '';
+      return;
+    }
+
+    if (!businessId) {
+      alert('No business found for this account — try logging in again.');
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append('image', file);
+
+    setUploadingProfile(true);
+    try {
+      const res = await fetch(`${API_BASE}/business/${businessId}/upload-image`, {
+        method: 'POST',
+        body: formData,
+      });
+      const data = await res.json();
+
+      if (!res.ok || data.success === false) {
+        throw new Error(data.message || 'Failed to upload photo.');
+      }
+
+      setProfileImage(data.data.image);
+    } catch (err: any) {
+      alert(err.message || 'Failed to upload photo.');
+    } finally {
+      setUploadingProfile(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
+
+  const removeProfileImage = async () => {
+    if (!businessId) {
+      setProfileImage(null);
+      return;
+    }
+
+    try {
+      const res = await fetch(`${API_BASE}/business/${businessId}/profile-image`, {
+        method: 'DELETE',
+      });
+      const data = await res.json();
+
+      if (!res.ok || data.success === false) {
+        throw new Error(data.message || 'Failed to remove photo.');
+      }
+
+      setProfileImage(null);
+    } catch (err: any) {
+      alert(err.message || 'Failed to remove photo.');
+    } finally {
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
+
+  // ------------------------------------------------------------------
+  // Business gallery — uploads to Cloudinary via the backend. State is
+  // always replaced with what the SERVER returns (the full, deduped,
+  // capped array) instead of appended to locally, so this can never
+  // drift out of sync or duplicate on repeated uploads.
+  // ------------------------------------------------------------------
+  const handleGalleryUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
     if (!files || files.length === 0) return;
 
@@ -54,27 +176,75 @@ export function Settings({
       return true;
     });
 
-    const newUrls = validFiles.map((file) => URL.createObjectURL(file));
-    setGalleryImages((prev) => [...prev, ...newUrls].slice(0, 12));
+    if (validFiles.length === 0) {
+      if (galleryInputRef.current) galleryInputRef.current.value = '';
+      return;
+    }
 
-    if (galleryInputRef.current) {
-      galleryInputRef.current.value = '';
+    if (!businessId) {
+      alert('No business found for this account — try logging in again.');
+      return;
+    }
+
+    const room = GALLERY_LIMIT - galleryImages.length;
+    if (room <= 0) {
+      alert(`Gallery limit of ${GALLERY_LIMIT} photos reached. Remove some photos first.`);
+      if (galleryInputRef.current) galleryInputRef.current.value = '';
+      return;
+    }
+
+    const filesToSend = validFiles.slice(0, room);
+    if (validFiles.length > room) {
+      alert(`Only ${room} more photo(s) fit under the ${GALLERY_LIMIT}-photo limit — uploading the first ${room}.`);
+    }
+
+    const formData = new FormData();
+    filesToSend.forEach((file) => formData.append('images', file));
+
+    setUploadingGallery(true);
+    try {
+      const res = await fetch(`${API_BASE}/business/${businessId}/upload-gallery`, {
+        method: 'POST',
+        body: formData,
+      });
+      const data = await res.json();
+
+      if (!res.ok || data.success === false) {
+        throw new Error(data.message || 'Failed to upload photos.');
+      }
+
+      setGalleryImages(data.data.galleryImages);
+    } catch (err: any) {
+      alert(err.message || 'Failed to upload photos.');
+    } finally {
+      setUploadingGallery(false);
+      if (galleryInputRef.current) galleryInputRef.current.value = '';
     }
   };
 
-  const removeGalleryImage = (url: string) => {
-    setGalleryImages((prev) => prev.filter((img) => img !== url));
-  };
+  const removeGalleryImage = async (url: string) => {
+    if (!businessId) {
+      setGalleryImages((prev) => prev.filter((img) => img !== url));
+      return;
+    }
 
-  // Services / offerings — editable tag list, seeded from whatever the
-  // business registered with (services / servicesProvided depending on
-  // your Business type naming).
-  const initialServices: string[] =
-    (business as any)?.servicesProvided ??
-    (business as any)?.services ??
-    [];
-  const [services, setServices] = useState<string[]>(initialServices);
-  const [newService, setNewService] = useState('');
+    try {
+      const res = await fetch(`${API_BASE}/business/${businessId}/gallery-image`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ imageUrl: url }),
+      });
+      const data = await res.json();
+
+      if (!res.ok || data.success === false) {
+        throw new Error(data.message || 'Failed to remove photo.');
+      }
+
+      setGalleryImages(data.data.galleryImages);
+    } catch (err: any) {
+      alert(err.message || 'Failed to remove photo.');
+    }
+  };
 
   const addService = () => {
     const value = newService.trim();
@@ -91,36 +261,63 @@ export function Settings({
     setServices((prev) => prev.filter((s) => s !== value));
   };
 
-  const handleImageUpload = (
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    const file = event.target.files?.[0];
-
-    if (!file) return;
-
-    // Optional validation
-    if (!file.type.startsWith('image/')) {
-      alert('Please select an image file.');
-      return;
+  // ------------------------------------------------------------------
+  // Telegram bot LINK — the public link customers tap on the business
+  // profile page to open a chat with the business's bot.
+  // ------------------------------------------------------------------
+  const isValidTelegramLink = (value: string) => {
+    if (!value) return true; // empty is allowed (clears the link)
+    try {
+      const url = new URL(value);
+      return (
+        (url.protocol === 'https:' || url.protocol === 'http:') &&
+        (url.hostname === 't.me' || url.hostname === 'telegram.me')
+      );
+    } catch {
+      return false;
     }
-
-    // Limit image size to 5MB
-    if (file.size > 5 * 1024 * 1024) {
-      alert('Image size must be less than 5MB.');
-      return;
-    }
-
-    const imageUrl = URL.createObjectURL(file);
-
-    setProfileImage(imageUrl);
   };
 
-  const removeProfileImage = () => {
-    setProfileImage(null);
+  const saveTelegramLink = async () => {
+    const trimmed = telegramLink.trim();
 
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
+    if (!isValidTelegramLink(trimmed)) {
+      setTelegramLinkError('Enter a valid Telegram link, e.g. https://t.me/your_bot');
+      return;
     }
+
+    if (!businessId) {
+      alert('No business found for this account — try logging in again.');
+      return;
+    }
+
+    setTelegramLinkError('');
+    setSavingTelegramLink(true);
+    try {
+      const res = await fetch(`${API_BASE}/business/${businessId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ telegramBotLink: trimmed }),
+      });
+      const data = await res.json();
+
+      if (!res.ok || data.success === false) {
+        throw new Error(data.message || 'Failed to save Telegram link.');
+      }
+
+      setTelegramLink(data.data.telegramBotLink || '');
+      setEditingTelegramLink(false);
+    } catch (err: any) {
+      setTelegramLinkError(err.message || 'Failed to save Telegram link.');
+    } finally {
+      setSavingTelegramLink(false);
+    }
+  };
+
+  const cancelEditTelegramLink = () => {
+    setTelegramLink((business as any)?.telegramBotLink || '');
+    setTelegramLinkError('');
+    setEditingTelegramLink(false);
   };
 
   const SettingRow = ({
@@ -227,12 +424,17 @@ export function Settings({
                   <Button
                     variant="outline"
                     size="sm"
+                    disabled={uploadingProfile}
                     onClick={() => fileInputRef.current?.click()}
                   >
-                    {profileImage ? 'Change photo' : 'Upload photo'}
+                    {uploadingProfile
+                      ? 'Uploading…'
+                      : profileImage
+                      ? 'Change photo'
+                      : 'Upload photo'}
                   </Button>
 
-                  {profileImage && (
+                  {profileImage && !uploadingProfile && (
                     <Button
                       variant="outline"
                       size="sm"
@@ -434,7 +636,7 @@ export function Settings({
             <p className="text-xs text-muted-foreground mb-4 leading-relaxed">
               These photos power the sliding image on your public business card
               and profile page. Upload a few shots of your space, work, or products.
-              JPG, PNG or WEBP. Max 5MB each, up to 12 photos.
+              JPG, PNG or WEBP. Max 5MB each, up to {GALLERY_LIMIT} photos.
             </p>
 
             {/* Sliding preview strip */}
@@ -480,9 +682,13 @@ export function Settings({
               variant="outline"
               size="sm"
               onClick={() => galleryInputRef.current?.click()}
-              disabled={galleryImages.length >= 12}
+              disabled={uploadingGallery || galleryImages.length >= GALLERY_LIMIT}
             >
-              {galleryImages.length >= 12 ? 'Limit reached (12)' : 'Add photos'}
+              {uploadingGallery
+                ? 'Uploading…'
+                : galleryImages.length >= GALLERY_LIMIT
+                ? `Limit reached (${GALLERY_LIMIT})`
+                : 'Add photos'}
             </Button>
 
           </CardContent>
@@ -586,6 +792,87 @@ export function Settings({
                 </Button>
               }
             />
+
+            {/* Telegram bot LINK — the public link shown on the customer-
+                facing profile page's "Book via Telegram" button.
+                NOTE: this reads from local `telegramLink` state (kept in
+                sync on load + after a successful save), NOT from the
+                `business` prop directly — that prop is owned by the
+                parent and doesn't get refreshed after this component's
+                own PUT request, so reading it here showed stale/blank
+                data right after saving. */}
+            <div className="py-4 last:pb-0">
+              <div className="flex justify-between items-start gap-4">
+                <div>
+                  <div className="font-medium text-sm">
+                    Telegram bot link
+                  </div>
+                  <div className="text-xs text-muted-foreground mt-1 leading-relaxed">
+                    {editingTelegramLink
+                      ? 'Paste the public link customers tap to chat with your bot.'
+                      : telegramLink
+                      ? telegramLink
+                      : 'Not set — customers won\u2019t be able to tap through yet.'}
+                  </div>
+                </div>
+
+                {!editingTelegramLink && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setEditingTelegramLink(true)}
+                    className="flex-shrink-0"
+                  >
+                    {telegramLink ? 'Edit' : 'Add link'}
+                  </Button>
+                )}
+              </div>
+
+              {editingTelegramLink && (
+                <div className="mt-3">
+                  <div className="flex gap-2">
+                    <input
+                      value={telegramLink}
+                      onChange={(e) => {
+                        setTelegramLink(e.target.value);
+                        if (telegramLinkError) setTelegramLinkError('');
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          saveTelegramLink();
+                        }
+                        if (e.key === 'Escape') {
+                          cancelEditTelegramLink();
+                        }
+                      }}
+                      placeholder="https://t.me/your_bot"
+                      className="flex-1 rounded-lg border bg-background px-3 py-1.5 text-sm outline-none focus:ring-2 focus:ring-ring"
+                      autoFocus
+                    />
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      disabled={savingTelegramLink}
+                      onClick={saveTelegramLink}
+                    >
+                      {savingTelegramLink ? 'Saving…' : 'Save'}
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      disabled={savingTelegramLink}
+                      onClick={cancelEditTelegramLink}
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                  {telegramLinkError && (
+                    <p className="text-xs text-red-600 mt-1.5">{telegramLinkError}</p>
+                  )}
+                </div>
+              )}
+            </div>
 
           </CardContent>
         </Card>
